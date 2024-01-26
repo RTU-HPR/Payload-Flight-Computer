@@ -2,6 +2,14 @@
 #include <Config.h>
 #include <Logging.h>
 
+// Get performance monitoring global variables
+extern int on_board_baro_read_time;
+extern int imu_read_time;
+extern int battery_voltage_read_time;
+extern int container_baro_read_time;
+extern int container_temperature_read_time;
+extern int outside_thermistor_read_time;
+
 class Sensors
 {
 private:

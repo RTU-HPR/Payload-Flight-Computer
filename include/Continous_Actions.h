@@ -1,5 +1,10 @@
 #include <Actions.h>
 
+// Performance monitoring
+unsigned long last_sensor_read_millis = 0;
+unsigned long last_gps_read_millis = 0;
+unsigned long last_logging_millis = 0;
+
 void Actions::runContinousActions(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Heater &heater, Config &config)
 {
   // Receive any commands
@@ -29,7 +34,9 @@ void Actions::runContinousActions(Sensors &sensors, Navigation &navigation, Comm
   // Run the GPS action
   if (gpsActionEnabled)
   {
+    last_gps_read_millis = millis();
     runGpsAction(navigation);
+    gps_read_time = millis() - last_gps_read_millis;
   }
 
   // Run the ranging action
@@ -41,7 +48,9 @@ void Actions::runContinousActions(Sensors &sensors, Navigation &navigation, Comm
   // Run the logging action
   if (loggingActionEnabled)
   {
-    runLoggingAction(logging, navigation, sensors);
+    last_logging_millis = millis();
+    runLoggingAction(logging, navigation, sensors, heater);
+    logging_time = millis() - last_logging_millis;
   }
 
   // Run the pyro channel manager action
@@ -180,10 +189,10 @@ void Actions::runGpsAction(Navigation &navigation)
   navigation.readGps(navigation.navigation_data);
 }
 
-void Actions::runLoggingAction(Logging &logging, Navigation &navigation, Sensors &sensors)
+void Actions::runLoggingAction(Logging &logging, Navigation &navigation, Sensors &sensors, Heater &heater)
 {
   // Log the data to the sd card
-  String packet = createLoggablePacket(sensors, navigation);
+  String packet = createLoggablePacket(sensors, heater, navigation);
   logging.writeTelemetry(packet);
 }
 
@@ -259,11 +268,15 @@ void Actions::runPyroChannelManagerAction(Config &config)
   }
 }
 
-String Actions::createLoggablePacket(Sensors &sensors, Navigation &navigation)
+String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigation &navigation)
 {
   String packet = "";
-  // UKHAS
   packet += String(loggable_packed_id);
+  packet += ",";
+  packet += String(millis());
+  packet += ",";
+  // GPS
+  packet += String(navigation.navigation_data.gps.epoch_time);
   packet += ",";
   packet += String(navigation.navigation_data.gps.hour);
   packet += ":";
@@ -277,18 +290,48 @@ String Actions::createLoggablePacket(Sensors &sensors, Navigation &navigation)
   packet += ",";
   packet += String(navigation.navigation_data.gps.altitude, 2);
   packet += ",";
-  packet += String(sensors.data.outsideThermistor.temperature, 2);
+  packet += String(navigation.navigation_data.gps.speed, 2);
   packet += ",";
   packet += String(navigation.navigation_data.gps.satellites);
   packet += ",";
+  packet += String(navigation.navigation_data.gps.heading);
+  packet += ",";
+  packet += String(navigation.navigation_data.gps.pdop);
+  packet += ",";
+  // Container temperature/pressure
+  packet += String(sensors.data.containerTemperature.temperature, 2);
+  packet += ",";
+  packet += String(sensors.data.containerBaro.temperature, 2);
+  packet += ",";
+  packet += String(sensors.data.containerBaro.pressure);
+  packet += ",";
+  // Heating system
+  float p, i, d;
+  heater.getPidValues(p, i, d);
+  packet += String(heater.isHeaterEnabled());
+  packet += ",";
+  packet += String(heater.getCurrentTemperatureStep(), 2);
+  packet += ",";
+  packet += String(heater.getTargetTemperature(), 2);
+  packet += ",";
+  packet += String(heater.getHeaterPwm());
+  packet += ",";
+  packet += String(p, 2);
+  packet += ",";
+  packet += String(i, 2);
+  packet += ",";
+  packet += String(d, 2);
+  packet += ",";
+  // Onboard temperature/pressure
+  packet += String(sensors.data.onBoardBaro.temperature, 2);
+  packet += ",";
   packet += String(sensors.data.onBoardBaro.pressure);
   packet += ",";
-  packet += String(navigation.navigation_data.gps.speed, 2);
-  packet += ",";
   packet += String(sensors.data.onBoardBaro.altitude, 2);
-  // CUSTOM
-  // IMU
   packet += ",";
+  packet += String(sensors.data.outsideThermistor.temperature, 2);
+  packet += ",";
+  // IMU
   packet += String(sensors.data.imu.accel.acceleration.x, 4);
   packet += ",";
   packet += String(sensors.data.imu.accel.acceleration.y, 4);
@@ -308,27 +351,6 @@ String Actions::createLoggablePacket(Sensors &sensors, Navigation &navigation)
   packet += String(sensors.data.imu.gyro.gyro.z, 4);
   packet += ",";
   packet += String(sensors.data.imu.temp.temperature, 2);
-  // MS56XX
-  packet += ",";
-  packet += String(sensors.data.onBoardBaro.temperature, 2);
-  // Container temperature
-  packet += ",";
-  packet += String(sensors.data.containerTemperature.temperature, 2);
-  // Container baro
-  packet += ",";
-  packet += String(sensors.data.containerBaro.temperature, 2);
-  packet += ",";
-  packet += String(sensors.data.containerBaro.pressure);
-  packet += ",";
-  // Battery
-  packet += String(sensors.data.battery.voltage, 2);
-  packet += ",";
-  // GPS
-  packet += String(navigation.navigation_data.gps.epoch_time);
-  packet += ",";
-  packet += String(navigation.navigation_data.gps.heading);
-  packet += ",";
-  packet += String(navigation.navigation_data.gps.pdop);
   // Ranging
   packet += ",";
   packet += String(navigation.navigation_data.ranging[0].distance, 2);
@@ -367,14 +389,38 @@ String Actions::createLoggablePacket(Sensors &sensors, Navigation &navigation)
   packet += ",";
   packet += String(navigation.navigation_data.ranging_position.height, 2);
   packet += ",";
-  // TODO: Add Heater/PID data
-  // MISC
-  packet += String(millis());
+  // Battery
+  packet += String(sensors.data.battery.voltage, 2);
   packet += ",";
+  // Performance/debugging
   packet += String(rp2040.getUsedHeap());
   packet += ",";
-  packet += String(loopTime);
-
+  packet += String(total_loop_time);
+  packet += ",";
+  packet += String(continuous_actions_time);
+  packet += ",";
+  packet += String(timed_actions_time);
+  packet += ",";
+  packet += String(requested_actions_time);
+  packet += ",";
+  packet += String(gps_read_time);
+  packet += ",";
+  packet += String(logging_time);
+  packet += ",";
+  packet += String(sensor_read_time);
+  packet += ",";
+  packet += String(on_board_baro_read_time);
+  packet += ",";
+  packet += String(imu_read_time);
+  packet += ",";
+  packet += String(battery_voltage_read_time);
+  packet += ",";
+  packet += String(container_baro_read_time);
+  packet += ",";
+  packet += String(container_temperature_read_time);
+  packet += ",";
+  packet += String(outside_thermistor_read_time);
+  
   loggable_packed_id++;
 
   return packet;

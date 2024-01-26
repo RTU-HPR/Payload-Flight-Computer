@@ -1,5 +1,13 @@
 #include "Sensors.h"
 
+// Performance monitoring
+unsigned int last_on_board_baro_read_millis = 0;
+unsigned int last_imu_read_millis = 0;
+unsigned int last_battery_voltage_read_millis = 0;
+unsigned int last_container_baro_read_millis = 0;
+unsigned int last_container_temperature_read_millis = 0;
+unsigned int last_outside_thermistor_read_millis = 0;
+
 bool Sensors::begin(Logging &logging, Config &config)
 {
   bool success = true;
@@ -99,23 +107,29 @@ bool Sensors::begin(Logging &logging, Config &config)
 
 void Sensors::readSensors()
 {
-  // Read MS56XX
+  last_on_board_baro_read_millis = millis();
   readOnBoardBaro();
+  on_board_baro_read_time = millis() - last_on_board_baro_read_millis;
 
-  // Read IMU
+  last_imu_read_millis = millis();
   readImu();
+  imu_read_time = millis() - last_imu_read_millis;
 
-  // Read battery voltage
+  last_battery_voltage_read_millis = millis();
   readBatteryVoltage();
+  battery_voltage_read_time = millis() - last_battery_voltage_read_millis;
 
-  // Read outside thermistor
+  last_outside_thermistor_read_millis = millis();
   readOutsideThermistor();
+  outside_thermistor_read_time = millis() - last_outside_thermistor_read_millis;
 
-  // Read container barometer
+  // last_container_baro_read_millis = millis();
   // readContainerBarometer();
+  // container_baro_read_time = millis() - last_container_baro_read_millis;
 
-  // Read container temperature sensor
+  // last_container_temperature_read_millis = millis();
   // readContainerTemperature();
+  // container_temperature_read_time = millis() - last_container_temperature_read_millis;
 }
 
 bool Sensors::beginPortExtender(Config &config)
@@ -252,7 +266,7 @@ bool Sensors::readContainerBarometer()
   float new_pressure = _containerBaro.readPressure();
   float new_temperature = _containerBaro.readTemperature();
 
-  if ((new_pressure > 1000 && new_pressure < 120000) && (new_temperature > -100 && new_temperature < 100)) // Between 1000 and 120_000 Pa and -100 and 100 C
+  if ((new_pressure > 100 && new_pressure < 120000) && (new_temperature > -100 && new_temperature < 100)) // Between 100 and 120_000 Pa and -100 and 100 C
   {
     data.containerBaro.pressure = new_pressure;
     data.containerBaro.temperature = new_temperature;

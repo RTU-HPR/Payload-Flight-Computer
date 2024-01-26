@@ -3,22 +3,25 @@
 #include <Timed_Actions.h>
 #include <Requested_Actions.h>
 
-// unsigned long last_time_1 = 0;
-// unsigned long last_time_2 = 0;
+// Performance monitoring
+extern int continuous_actions_time;
+extern int timed_actions_time;
+extern int requested_actions_time;
+unsigned long last_continous_actions_millis = 0;
+unsigned long last_timed_actions_millis = 0;
+unsigned long last_requested_actions_millis = 0;
 
 void Actions::runAllActions(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Heater &heater, Config &config)
 {
-    // last_time_1 = millis();
-    // Receive commands, read sensors and gps, log data to sd card
-    runContinousActions(sensors, navigation, communication, logging, heater, config);
-    // Serial.println("Continous actions time: " + String(millis() - last_time_1) + "ms");
-    // Do ranging and send telemetry data
-    // last_time_1 = millis();
-    runTimedActions(sensors, navigation, communication, logging, config);
-    // Serial.println("Timed actions time: " + String(millis() - last_time_1) + "ms");
+  last_continous_actions_millis = millis();
+  runContinousActions(sensors, navigation, communication, logging, heater, config);
+  continuous_actions_time = millis() - last_continous_actions_millis;
 
-    // Do actions requested by a command
-    // last_time_1 = millis();
-    runRequestedActions(sensors, navigation, communication, logging, heater, config);
-    // Serial.println("Requested actions time: " + String(millis() - last_time_1) + "ms");
+  last_timed_actions_millis = millis();
+  runTimedActions(sensors, navigation, communication, logging, config);
+  timed_actions_time = millis() - last_timed_actions_millis;
+
+  last_requested_actions_millis = millis();
+  runRequestedActions(sensors, navigation, communication, logging, heater, config);
+  requested_actions_time = millis() - last_requested_actions_millis;
 }
