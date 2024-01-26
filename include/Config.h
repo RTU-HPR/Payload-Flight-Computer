@@ -98,7 +98,7 @@ public:
     };
 
     // SD card
-    String TELMETRY_FILE_HEADER = "index,time,gps_lat,gps_lng,gps_altitude,outside_temperature,gps_satellites,pressure,gps_speed,baro_altitude,acc_x,acc_y,acc_z,acc_heading,acc_pitch,acc_roll,gyro_x,gyro_y,gyro_z,imu_temp,onboard_temp,container_temp,container_temp_baro,container_pressure,battery_voltage,gps_epoch,gps_heading,gps_pdop,r1_distance,r1_ferror,r1_rssi,r1_snr,r1_time,r2_distance,r2_ferror,r2_rssi,r2_snr,r2_time,r3_distance,r3_ferror,r3_rssi,r3_snr,r3_time,ranging_lat,ranging_lng,ranging_altitude,time_on_ms,used_heap,loop_time";
+    String TELMETRY_FILE_HEADER = "index,time_on_ms,gps_epoch_time,gps_hour:gps_minute:gps_second,gps_lat,gps_lng,gps_altitude,gps_speed,gps_satellites,gps_heading,gps_pdop,container_temp,container_temp_filtered,container_baro_temp,container_baro_pressure,heater_enabled,heater_current_temp_step,heater_target_temp,heater_pwm,heater_pid_p,heater_pid_i,heater_pid_d,onboard_baro_temp,onboard_baro_pressure,onboard_baro_altitude,outside_thermistor_temp,imu_accel_x,imu_accel_y,imu_accel_z,imu_heading,imu_pitch,imu_roll,imu_gyro_x,imu_gyro_y,imu_gyro_z,imu_temp,ranging_0_distance,ranging_0_f_error,ranging_0_rssi,ranging_0_snr,ranging_0_time,ranging_1_distance,ranging_1_f_error,ranging_1_rssi,ranging_1_snr,ranging_1_time,ranging_2_distance,ranging_2_f_error,ranging_2_rssi,ranging_2_snr,ranging_2_time,ranging_position_lat,ranging_position_lng,ranging_position_height,battery_voltage,container_heater_current,used_heap,loop_time,continuous_actions_time,timed_actions_time,requested_actions_time,gps_read_time,logging_time,sensor_read_time,on_board_baro_read_time,imu_read_time,battery_voltage_read_time,container_baro_read_time,container_temperature_read_time,outside_thermistor_read_time";
     String INFO_FILE_HEADER = "time,info";
     String ERROR_FILE_HEADER = "time,error";
     String CONFIG_FILE_HEADER = "descent_flag,remaining_descent_time,parachutes_deployed_flag,heater_control_flag";
@@ -193,6 +193,16 @@ public:
         .R2_value = 24000,        // Taken from the schematic
     };
 
+    // Container heater voltage reader
+    AdcVoltage::AdcVoltage_Config container_heater_voltage_reader_config = {
+        .pin = 27,                // Taken from the schematic
+        .adc_resolution = 4095,   // 12 bit
+        .reference_voltage = 3.3, // MCU voltage
+        .R1_value = 51000,        // Taken from the schematic
+        .R2_value = 24000,        // Taken from the schematic
+    };
+    const float HEATER_RESISTOR_VALUE = 1.1;
+
     // Container barometer
     struct BMP180_Config
     {
@@ -252,12 +262,6 @@ public:
     const int PC_BAUDRATE = 115200;
 
     // HEATER
-    // Heater current
-    const float HEATER_CURR_SENS_PIN = 27;
-    const float HEATER_CURR_CONVERSION_FACTOR = 3.3 * 3.1251;
-    const float HEATER_RESISTOR_VALUE = 1.1;
-
-    // Heater PID config
     struct Heater_Config
     {
       int heater_pin;

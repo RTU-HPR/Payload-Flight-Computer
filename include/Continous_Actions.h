@@ -49,7 +49,7 @@ void Actions::runContinousActions(Sensors &sensors, Navigation &navigation, Comm
   if (loggingActionEnabled)
   {
     last_logging_millis = millis();
-    runLoggingAction(logging, navigation, sensors, heater);
+    runLoggingAction(logging, navigation, sensors, heater, config);
     logging_time = millis() - last_logging_millis;
   }
 
@@ -189,10 +189,10 @@ void Actions::runGpsAction(Navigation &navigation)
   navigation.readGps(navigation.navigation_data);
 }
 
-void Actions::runLoggingAction(Logging &logging, Navigation &navigation, Sensors &sensors, Heater &heater)
+void Actions::runLoggingAction(Logging &logging, Navigation &navigation, Sensors &sensors, Heater &heater, Config &config)
 {
   // Log the data to the sd card
-  String packet = createLoggablePacket(sensors, heater, navigation);
+  String packet = createLoggablePacket(sensors, heater, navigation, config);
   logging.writeTelemetry(packet);
 }
 
@@ -268,7 +268,7 @@ void Actions::runPyroChannelManagerAction(Config &config)
   }
 }
 
-String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigation &navigation)
+String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigation &navigation, Config &config)
 {
   String packet = "";
   packet += String(loggable_packed_id);
@@ -391,8 +391,10 @@ String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigatio
   packet += ",";
   packet += String(navigation.navigation_data.ranging_position.height, 2);
   packet += ",";
-  // Battery
+  // Battery/Heater current
   packet += String(sensors.data.battery.voltage, 2);
+  packet += ",";
+  packet += String(sensors.data.battery.voltage / (float)config.HEATER_RESISTOR_VALUE, 2);
   packet += ",";
   // Performance/debugging
   packet += String(rp2040.getUsedHeap());

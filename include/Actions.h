@@ -21,7 +21,7 @@ private:
     // Prerequisite functions
     String createEssentialDataPacket(Sensors &sensors, Navigation &navigation, Logging &logging, Config &config);
     String createCompleteDataPacket(Sensors &sensors, Navigation &navigation, Heater &heater, Config &config);
-    String createLoggablePacket(Sensors &sensors, Heater &heater, Navigation &navigation);
+    String createLoggablePacket(Sensors &sensors, Heater &heater, Navigation &navigation, Config &config);
     unsigned long loggable_packed_id = 1;
 
     // Continuous actions
@@ -39,7 +39,7 @@ private:
     void runGpsAction(Navigation &navigation);
     bool gpsActionEnabled = true;
 
-    void runLoggingAction(Logging &logging, Navigation &navigation, Sensors &sensors, Heater &heater);
+    void runLoggingAction(Logging &logging, Navigation &navigation, Sensors &sensors, Heater &heater, Config &config);
     bool loggingActionEnabled = true;
 
     void runRangingAction(Navigation &navigation, Config &config);

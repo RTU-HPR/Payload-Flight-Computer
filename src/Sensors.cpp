@@ -4,6 +4,7 @@
 unsigned int last_on_board_baro_read_millis = 0;
 unsigned int last_imu_read_millis = 0;
 unsigned int last_battery_voltage_read_millis = 0;
+unsigned int last_container_heater_voltage_read_millis = 0;
 unsigned int last_container_baro_read_millis = 0;
 unsigned int last_container_temperature_read_millis = 0;
 unsigned int last_outside_thermistor_read_millis = 0;
@@ -76,6 +77,18 @@ bool Sensors::begin(Logging &logging, Config &config)
     Serial.println("Battery voltage reader initialization complete");
   }
 
+  // Initialize container heater voltafe reader
+  if (!beginContainerHeaterVoltageReader(config))
+  {
+    String errorString = "Container heater voltage reader begin fail";
+    logging.recordError(errorString);
+    success = false;
+  }
+  else
+  {
+    Serial.println("Container heater voltage reader initialization complete");
+  }
+
   // HEATED CONTAINER
   // Initialize container barometer
   if (!beginContainerBaro(config))
@@ -118,6 +131,10 @@ void Sensors::readSensors()
   last_battery_voltage_read_millis = millis();
   readBatteryVoltage();
   battery_voltage_read_time = millis() - last_battery_voltage_read_millis;
+
+  last_container_heater_voltage_read_millis = millis();
+  readContainerHeaterVoltage();
+  container_heater_voltage_read_time = millis() - last_container_heater_voltage_read_millis;
 
   last_outside_thermistor_read_millis = millis();
   readOutsideThermistor();
@@ -191,6 +208,12 @@ bool Sensors::beginBatteryVoltageReader(Config &config)
   return true;
 }
 
+bool Sensors::beginContainerHeaterVoltageReader(Config & config)
+{
+  _containerHeaterVoltageReader.begin(config.container_heater_voltage_reader_config);
+  return true;
+}
+
 bool Sensors::beginContainerBaro(Config &config)
 {
   if (!_containerBaro.begin(config.BMP180_config.i2c_address, config.BMP180_config.wire))
@@ -244,6 +267,18 @@ bool Sensors::readBatteryVoltage()
   }
   Serial.println("Battery voltage reading failed!");
   return false;
+}
+
+bool Sensors::readContainerHeaterVoltage()
+{
+  // Read voltage and do calculations
+  if (_containerHeaterVoltageReader.read(data.containerHeaterVoltage))
+  {
+    return true;
+  }
+  Serial.println("Container heater voltage reading failed!");
+  return false;
+
 }
 
 bool Sensors::readOutsideThermistor()
