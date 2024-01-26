@@ -51,6 +51,10 @@ void Actions::runContinousActions(Sensors &sensors, Navigation &navigation, Comm
     last_logging_millis = millis();
     runLoggingAction(logging, navigation, sensors, heater, config);
     logging_time = millis() - last_logging_millis;
+    if (loggable_packed_id % 50 == 0)
+    {
+      Serial.println("Logged packet count: " + String(loggable_packed_id) + " | Turned on time: " + String(millis() / 1000) + " s");
+    }
   }
 
   // Run the pyro channel manager action
