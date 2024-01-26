@@ -76,7 +76,7 @@ String Actions::createCompleteDataPacket(Sensors &sensors, Navigation &navigatio
   String packet = "";
   packet += String(sensors.data.containerBaro.temperature, 1);
   packet += ",";
-  packet += String(sensors.data.containerTemperature.temperature, 1);
+  packet += String(sensors.data.containerTemperature.filtered_temperature, 1);
   packet += ",";
   packet += String(sensors.data.onBoardBaro.temperature, 1);
   packet += ",";

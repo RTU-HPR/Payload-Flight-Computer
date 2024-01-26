@@ -181,7 +181,7 @@ void Actions::runSensorAction(Sensors &sensors)
 void Actions::runHeaterAction(Heater &heater, const Sensors &sensors)
 {
   // Update the heater
-  heater.update(sensors.data.containerTemperature.temperature);
+  heater.update(sensors.data.containerTemperature.filtered_temperature);
 }
 
 void Actions::runGpsAction(Navigation &navigation)
@@ -300,6 +300,8 @@ String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigatio
   packet += ",";
   // Container temperature/pressure
   packet += String(sensors.data.containerTemperature.temperature, 2);
+  packet += ",";
+  packet += String(sensors.data.containerTemperature.filtered_temperature, 2);
   packet += ",";
   packet += String(sensors.data.containerBaro.temperature, 2);
   packet += ",";
@@ -420,7 +422,7 @@ String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigatio
   packet += String(container_temperature_read_time);
   packet += ",";
   packet += String(outside_thermistor_read_time);
-  
+
   loggable_packed_id++;
 
   return packet;

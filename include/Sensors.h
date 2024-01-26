@@ -88,11 +88,20 @@ private:
   struct ContainerTemperature_Data
   {
     float temperature;
+    float filtered_temperature;
   };
+
+  /**
+   * @brief Kalman filter for the container temperature sensor.
+   * @param  e_mea: Measurement Uncertainty (Default value: 1)
+   * @param e_est: Estimation Uncertainty (Default value: 1)
+   * @param q: Process Noise (Default value: 0.01)
+   */
+  SimpleKalmanFilter _containerTemperatureFilter = SimpleKalmanFilter(1, 1, 0.01);
 
 public:
   String sensorErrorString = "";
-  
+
   /**
    * @brief Structure to store all sensor data
    */

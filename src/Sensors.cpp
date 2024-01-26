@@ -63,7 +63,7 @@ bool Sensors::begin(Logging &logging, Config &config)
   {
     Serial.println("Thermistor initialization complete");
   }
-  
+
   // Initialize battery voltage reader
   if (!beginBatteryVoltageReader(config))
   {
@@ -283,6 +283,7 @@ bool Sensors::readContainerTemperature()
   if (new_temperature > -100 && new_temperature < 100) // Between -100 and 100 C
   {
     data.containerTemperature.temperature = new_temperature;
+    data.containerTemperature.filtered_temperature = _containerTemperatureFilter.updateEstimate(new_temperature);
     return true;
   }
   Serial.println("Container temperature sensor reading failed!");

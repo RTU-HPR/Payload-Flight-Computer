@@ -7,14 +7,15 @@
 #include <SDFS.h>
 #include <cppQueue.h>
 
-// Public sensor libraries
+// Public libraries
 #include <PCF8575.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_LSM6DSL.h>
 #include <NTC_Thermistor.h>
 #include <Adafruit_BMP085.h>
-#include "ClosedCube_STS35.h"
-#include "ClosedCube_I2C.h"
+#include <ClosedCube_STS35.h>
+#include <ClosedCube_I2C.h>
+#include <SimpleKalmanFilter.h>
 
 // Our wrappers
 #include <RadioLib_wrapper.h>
