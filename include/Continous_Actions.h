@@ -419,6 +419,8 @@ String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigatio
   packet += ",";
   packet += String(battery_voltage_read_time);
   packet += ",";
+  packet += String(container_heater_voltage_read_time);
+  packet += ",";
   packet += String(container_baro_read_time);
   packet += ",";
   packet += String(container_temperature_read_time);
