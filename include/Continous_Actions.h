@@ -394,7 +394,7 @@ String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigatio
   // Battery/Heater current
   packet += String(sensors.data.battery.voltage, 2);
   packet += ",";
-  packet += String(sensors.data.battery.voltage / (float)config.HEATER_RESISTOR_VALUE, 2);
+  packet += String(sensors.data.containerHeaterVoltage.voltage / (float)config.HEATER_RESISTOR_VALUE, 2);
   packet += ",";
   // Performance/debugging
   packet += String(rp2040.getUsedHeap());
