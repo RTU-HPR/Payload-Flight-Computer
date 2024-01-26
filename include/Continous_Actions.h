@@ -22,7 +22,9 @@ void Actions::runContinousActions(Sensors &sensors, Navigation &navigation, Comm
   // Run the sensor action
   if (sensorActionEnabled)
   {
+    last_sensor_read_millis = millis();
     runSensorAction(sensors);
+    sensor_read_time = millis() - last_sensor_read_millis;
   }
 
   // Run the heater action
