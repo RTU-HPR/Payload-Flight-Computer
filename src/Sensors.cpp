@@ -1,5 +1,14 @@
 #include "Sensors.h"
 
+// Performance monitoring
+unsigned int last_on_board_baro_read_millis = 0;
+unsigned int last_imu_read_millis = 0;
+unsigned int last_battery_voltage_read_millis = 0;
+unsigned int last_container_heater_voltage_read_millis = 0;
+unsigned int last_container_baro_read_millis = 0;
+unsigned int last_container_temperature_read_millis = 0;
+unsigned int last_outside_thermistor_read_millis = 0;
+
 bool Sensors::begin(Logging &logging, Config &config)
 {
   bool success = true;
@@ -55,7 +64,7 @@ bool Sensors::begin(Logging &logging, Config &config)
   {
     Serial.println("Thermistor initialization complete");
   }
-  
+
   // Initialize battery voltage reader
   if (!beginBatteryVoltageReader(config))
   {
@@ -66,6 +75,18 @@ bool Sensors::begin(Logging &logging, Config &config)
   else
   {
     Serial.println("Battery voltage reader initialization complete");
+  }
+
+  // Initialize container heater voltafe reader
+  if (!beginContainerHeaterVoltageReader(config))
+  {
+    String errorString = "Container heater voltage reader begin fail";
+    logging.recordError(errorString);
+    success = false;
+  }
+  else
+  {
+    Serial.println("Container heater voltage reader initialization complete");
   }
 
   // HEATED CONTAINER
@@ -99,23 +120,33 @@ bool Sensors::begin(Logging &logging, Config &config)
 
 void Sensors::readSensors()
 {
-  // Read MS56XX
+  last_on_board_baro_read_millis = millis();
   readOnBoardBaro();
+  on_board_baro_read_time = millis() - last_on_board_baro_read_millis;
 
-  // Read IMU
+  last_imu_read_millis = millis();
   readImu();
+  imu_read_time = millis() - last_imu_read_millis;
 
-  // Read battery voltage
+  last_battery_voltage_read_millis = millis();
   readBatteryVoltage();
+  battery_voltage_read_time = millis() - last_battery_voltage_read_millis;
 
-  // Read outside thermistor
+  last_container_heater_voltage_read_millis = millis();
+  readContainerHeaterVoltage();
+  container_heater_voltage_read_time = millis() - last_container_heater_voltage_read_millis;
+
+  last_outside_thermistor_read_millis = millis();
   readOutsideThermistor();
+  outside_thermistor_read_time = millis() - last_outside_thermistor_read_millis;
 
-  // Read container barometer
+  // last_container_baro_read_millis = millis();
   // readContainerBarometer();
+  // container_baro_read_time = millis() - last_container_baro_read_millis;
 
-  // Read container temperature sensor
+  // last_container_temperature_read_millis = millis();
   // readContainerTemperature();
+  // container_temperature_read_time = millis() - last_container_temperature_read_millis;
 }
 
 bool Sensors::beginPortExtender(Config &config)
@@ -177,6 +208,12 @@ bool Sensors::beginBatteryVoltageReader(Config &config)
   return true;
 }
 
+bool Sensors::beginContainerHeaterVoltageReader(Config & config)
+{
+  _containerHeaterVoltageReader.begin(config.container_heater_voltage_reader_config);
+  return true;
+}
+
 bool Sensors::beginContainerBaro(Config &config)
 {
   if (!_containerBaro.begin(config.BMP180_config.i2c_address, config.BMP180_config.wire))
@@ -232,6 +269,18 @@ bool Sensors::readBatteryVoltage()
   return false;
 }
 
+bool Sensors::readContainerHeaterVoltage()
+{
+  // Read voltage and do calculations
+  if (_containerHeaterVoltageReader.read(data.containerHeaterVoltage))
+  {
+    return true;
+  }
+  Serial.println("Container heater voltage reading failed!");
+  return false;
+
+}
+
 bool Sensors::readOutsideThermistor()
 {
   // Read temperature
@@ -252,7 +301,7 @@ bool Sensors::readContainerBarometer()
   float new_pressure = _containerBaro.readPressure();
   float new_temperature = _containerBaro.readTemperature();
 
-  if ((new_pressure > 1000 && new_pressure < 120000) && (new_temperature > -100 && new_temperature < 100)) // Between 1000 and 120_000 Pa and -100 and 100 C
+  if ((new_pressure > 100 && new_pressure < 120000) && (new_temperature > -100 && new_temperature < 100)) // Between 100 and 120_000 Pa and -100 and 100 C
   {
     data.containerBaro.pressure = new_pressure;
     data.containerBaro.temperature = new_temperature;
@@ -269,6 +318,7 @@ bool Sensors::readContainerTemperature()
   if (new_temperature > -100 && new_temperature < 100) // Between -100 and 100 C
   {
     data.containerTemperature.temperature = new_temperature;
+    data.containerTemperature.filtered_temperature = _containerTemperatureFilter.updateEstimate(new_temperature);
     return true;
   }
   Serial.println("Container temperature sensor reading failed!");

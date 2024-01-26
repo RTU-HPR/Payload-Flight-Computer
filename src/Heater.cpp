@@ -76,7 +76,7 @@ void Heater::calculatePidValues(const float &container_temp)
 
   // Make sure the the PID values are within the limits
   _proportional_term = constrain(_proportional_term, -_heater_config.Kp_limit, _heater_config.Kp_limit);
-  _integral_term = constrain(_integral_term, 0, _heater_config.Ki_limit); // Integral term can't be negative in our case
+  _integral_term = constrain(_integral_term, 0, _heater_config.Ki_limit/(float)_heater_config.Ki); // Integral term can't be negative in our case
   _derivative_term = constrain(_derivative_term, -_heater_config.Kd_limit, 0); // Derivative term can't be positive in our case 
 
   // Update temperature step temp value to nearest rounded down integer

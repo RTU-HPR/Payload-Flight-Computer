@@ -3,7 +3,7 @@
 bool Payload::initCommunicationBusses()
 {
   bool success = true;
-  
+
   // Wire0
   if (Wire.setSCL(config.WIRE0_SCL) && Wire.setSDA(config.WIRE0_SDA))
   {
@@ -130,7 +130,7 @@ void Payload::begin()
   }
 
   Serial.println();
-  
+
   // Send inital error string
   if (!logging.infoErrorQueueEmpty())
   {
@@ -203,10 +203,10 @@ void Payload::begin()
     Serial.println("Navigation initialized successfully");
   }
 
-  // Initialise the heater, but don't enable it yet
+  // Initialise the heater
   heater.begin(config.heater_config);
-  heater.enableHeater(sensors.data.containerTemperature.temperature);
+  heater.enableHeater(sensors.data.containerTemperature.filtered_temperature);
   Serial.println("Heater initialized successfully");
-  
+
   Serial.println();
 }

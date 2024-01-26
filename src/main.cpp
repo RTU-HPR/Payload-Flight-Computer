@@ -3,9 +3,39 @@
 Payload payload;
 
 // Performance monitoring
-unsigned long lastLoopMillis = 0;
-extern int loopTime; // Set as global variable
-int loopTime = 0;
+unsigned long last_total_loop_millis = 0;
+
+// Declare as global variables
+extern int total_loop_time;
+extern int continuous_actions_time;
+extern int timed_actions_time;
+extern int requested_actions_time;
+extern int gps_read_time;
+extern int logging_time;
+extern int sensor_read_time;
+extern int on_board_baro_read_time;
+extern int imu_read_time;
+extern int battery_voltage_read_time;
+extern int container_heater_voltage_read_time;
+extern int container_baro_read_time;
+extern int container_temperature_read_time;
+extern int outside_thermistor_read_time;
+
+// Set initial values
+int total_loop_time = 0;
+int continuous_actions_time = 0;
+int timed_actions_time = 0;
+int requested_actions_time = 0;
+int gps_read_time = 0;
+int logging_time = 0;
+int sensor_read_time = 0;
+int on_board_baro_read_time = 0;
+int imu_read_time = 0;
+int battery_voltage_read_time = 0;
+int container_heater_voltage_read_time = 0;
+int container_baro_read_time = 0;
+int container_temperature_read_time = 0;
+int outside_thermistor_read_time = 0;
 
 void setup()
 {
@@ -29,7 +59,7 @@ void setup()
 
 void loop()
 {
-  lastLoopMillis = millis();
+  last_total_loop_millis = millis();
   payload.actions.runAllActions(payload.sensors, payload.navigation, payload.communication, payload.logging, payload.heater, payload.config);
-  loopTime = millis() - lastLoopMillis;
+  total_loop_time = millis() - last_total_loop_millis;
 }

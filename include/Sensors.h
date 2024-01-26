@@ -2,6 +2,15 @@
 #include <Config.h>
 #include <Logging.h>
 
+// Get performance monitoring global variables
+extern int on_board_baro_read_time;
+extern int imu_read_time;
+extern int battery_voltage_read_time;
+extern int container_heater_voltage_read_time;
+extern int container_baro_read_time;
+extern int container_temperature_read_time;
+extern int outside_thermistor_read_time;
+
 class Sensors
 {
 private:
@@ -32,6 +41,13 @@ private:
    * This class provides functionality to interface with the battery voltage reader.
    */
   AdcVoltage _batteryVoltageReader;
+
+  /**
+   * @brief Object representing the container heater voltage reader.
+   * 
+   * This class provides functionality to interface with the container heater voltage reader.
+  */
+  AdcVoltage _containerHeaterVoltageReader;
 
   /**
    * @brief Object representing the container barometer.
@@ -80,11 +96,20 @@ private:
   struct ContainerTemperature_Data
   {
     float temperature;
+    float filtered_temperature;
   };
+
+  /**
+   * @brief Kalman filter for the container temperature sensor.
+   * @param  e_mea: Measurement Uncertainty (Default value: 1)
+   * @param e_est: Estimation Uncertainty (Default value: 1)
+   * @param q: Process Noise (Default value: 0.01)
+   */
+  SimpleKalmanFilter _containerTemperatureFilter = SimpleKalmanFilter(1, 1, 0.01);
 
 public:
   String sensorErrorString = "";
-  
+
   /**
    * @brief Structure to store all sensor data
    */
@@ -93,6 +118,7 @@ public:
     MS56XX::MS56XX_Data onBoardBaro;
     IMU_Data imu;
     AdcVoltage::AdcVoltage_Data battery;
+    AdcVoltage::AdcVoltage_Data containerHeaterVoltage;
     Thermistor_Data outsideThermistor;
     ContainerBarometer_Data containerBaro;
     ContainerTemperature_Data containerTemperature;
@@ -155,6 +181,14 @@ public:
   bool beginBatteryVoltageReader(Config &config);
 
   /**
+   * @brief Initializes the container heater voltage reader.
+   *
+   * @param config The configuration object containing the necessary settings for the container heater current reader.
+   * @return True if the initialization is successful, false otherwise.
+   */
+  bool beginContainerHeaterVoltageReader(Config &config);
+
+  /**
    * @brief Initializes the container barometer sensor.
    *
    * @param config The configuration object containing the settings for the sensor.
@@ -190,6 +224,14 @@ public:
    * @return true if the battery voltage was successfully read, false otherwise.
    */
   bool readBatteryVoltage();
+
+  /**
+   * @brief Reads the container heater voltage.
+   * @param config The configuration object containing the settings for the sensor.
+   * 
+   * @return true if the voltage was successfully read, false otherwise.
+   */
+  bool readContainerHeaterVoltage();
 
   /**
    * @brief Reads the outside thermistor temperature.
