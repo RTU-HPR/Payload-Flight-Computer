@@ -21,6 +21,4 @@ class Communication
      * @return Whether the message was sent successfully
     */
     bool sendRadio(byte *ccsds_packet, uint16_t ccsds_packet_length);
-
-    bool sendError(String errorString);
 };

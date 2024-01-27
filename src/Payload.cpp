@@ -146,7 +146,6 @@ void Payload::begin()
     Serial.println("INITAL INFO/ERROR: " + infoError);
     Serial.println();
     logging.writeError(infoError);
-    communication.sendError(infoError);
   }
 
   // Initialise all sensors
@@ -174,7 +173,6 @@ void Payload::begin()
     Serial.println("SENSOR ERROR: " + infoError);
     Serial.println();
     logging.writeError(infoError);
-    communication.sendError(infoError);
   }
 
   // Initialise GPS
@@ -183,7 +181,6 @@ void Payload::begin()
     String errorString = "GPS begin fail";
     Serial.println(errorString);
     logging.recordError(errorString);
-    communication.sendError(errorString);
   }
   else
   {
@@ -196,7 +193,6 @@ void Payload::begin()
     String errorString = "Ranging begin fail";
     Serial.println(errorString);
     logging.recordError(errorString);
-    communication.sendError(errorString);
   }
   else
   {
