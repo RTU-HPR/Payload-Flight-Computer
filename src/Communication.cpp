@@ -24,13 +24,3 @@ bool Communication::sendRadio(byte *ccsds_packet, uint16_t ccsds_packet_length)
   bool status = _radio->transmit_bytes(ccsds_packet, ccsds_packet_length);
   return status;
 }
-
-bool Communication::sendError(String errorString)
-{
-  // // Add the error prefix to the error string
-  // errorString = "PFC ERROR: " + errorString;
-
-  // // Send the error message
-  // return sendRadio();
-  return true;
-}

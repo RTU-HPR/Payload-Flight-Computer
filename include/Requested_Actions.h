@@ -43,12 +43,16 @@ void Actions::runInfoErrorSendAction(Communication &communication, Logging &logg
   // Send packet
   if (!communication.sendRadio(ccsds_packet, ccsds_packet_length))
   {
-    // Do nothing for now
+    // Add the message back to the queue
+    logging.addToInfoErrorQueue(msg_str);
+    delete[] ccsds_packet;
+    infoErrorRequestActionEnabled = false;
+    return;
   }
   infoErrorResponseId++;
   infoErrorRequestActionEnabled = false;
   // Free memory
-  delete[] ccsds_packet; // VERY IMPORTANT, otherwise a significant memory leak will occur
+  delete[] ccsds_packet;
 }
 
 void Actions::runCompleteDataRequestAction(Sensors &sensors, Navigation &navigation, Communication &communication, Heater &heater, Config &config)
