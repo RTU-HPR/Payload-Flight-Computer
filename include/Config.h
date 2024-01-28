@@ -294,6 +294,11 @@ public:
     const int DESCENT_TIME_BEFORE_PARACHUTE_DEPLOYMENT = 30000;
     const int LAUNCH_RAIL_SWITCH_ALTITUDE_THRESHOLD = 300;
 
+    // Buzzer
+    const int BUZZER_PIN = 20;
+    const int BUZZER_BEEP_TIME = 2000;
+    const int BUZZER_ACTION_START_TIME = 7200 * 1000; // 7200 seconds after turning on == 2 hours
+
     // Actions
     const int TIMED_ACTION_INITIAL_DELAY = 10000;
     // Data send action interval

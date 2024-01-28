@@ -61,6 +61,10 @@ private:
     // Timed actions
     void runTimedActions(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Config &config);
 
+    void runBuzzerAction(Config &config);
+    bool buzzerActionEnabled = true;
+    unsigned long buzzerLastStateTime = 0;
+
     void runEssentialDataSendAction(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Config &config);
     bool dataEssentialSendActionEnabled = true;
     uint16_t dataEssentialResponseId = 0;

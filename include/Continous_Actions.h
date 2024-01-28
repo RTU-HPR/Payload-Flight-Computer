@@ -214,10 +214,8 @@ void Actions::runRangingAction(Navigation &navigation, Config &config)
 
 void Actions::runGetCommunicationCycleStartAction(Navigation &navigation, Config &config)
 {
-  // Serial.println("GPS epoch time: " + String(navigation.navigation_data.gps.epoch_time));
   if (millis() - lastCommunicationCycle <= 3000)
   {
-    // Serial.println("Communication cycle already started: " + String(millis() - lastCommunicationCycle));
     return;
   }
   if (navigation.navigation_data.gps.epoch_time == 0)
