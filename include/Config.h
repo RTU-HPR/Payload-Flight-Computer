@@ -101,21 +101,19 @@ public:
     String TELMETRY_FILE_HEADER = "index,time_on_ms,gps_epoch_time,gps_hour:gps_minute:gps_second,gps_lat,gps_lng,gps_altitude,gps_speed,gps_satellites,gps_heading,gps_pdop,container_temp,container_temp_filtered,container_baro_temp,container_baro_pressure,heater_enabled,heater_current_temp_step,heater_target_temp,heater_pwm,heater_pid_p,heater_pid_i,heater_pid_d,onboard_baro_temp,onboard_baro_pressure,onboard_baro_altitude,outside_thermistor_temp,imu_accel_x,imu_accel_y,imu_accel_z,imu_heading,imu_pitch,imu_roll,imu_gyro_x,imu_gyro_y,imu_gyro_z,imu_temp,ranging_0_distance,ranging_0_f_error,ranging_0_rssi,ranging_0_snr,ranging_0_time,ranging_1_distance,ranging_1_f_error,ranging_1_rssi,ranging_1_snr,ranging_1_time,ranging_2_distance,ranging_2_f_error,ranging_2_rssi,ranging_2_snr,ranging_2_time,ranging_position_lat,ranging_position_lng,ranging_position_height,battery_voltage,container_heater_current,used_heap,loop_time,continuous_actions_time,timed_actions_time,requested_actions_time,gps_read_time,logging_time,sensor_read_time,on_board_baro_read_time,imu_read_time,battery_voltage_read_time,heater_current_read_time,container_baro_read_time,container_temperature_read_time,outside_thermistor_read_time";
     String INFO_FILE_HEADER = "time,info";
     String ERROR_FILE_HEADER = "time,error";
-    String CONFIG_FILE_HEADER = "descent_flag,remaining_descent_time,parachutes_deployed_flag,heater_control_flag";
+    String CONFIG_FILE_HEADER = "descent_flag,remaining_descent_time,parachutes_deployed_flag";
 
     struct Config_File_Values
     {
         int descent_flag;
         long remaining_descent_time;
         int parachutes_deployed_flag;
-        int heater_control_flag;
     };
 
     Config_File_Values config_file_values = {
         .descent_flag = 0,
-        .remaining_descent_time = -1,
+        .remaining_descent_time = DESCENT_TIME_BEFORE_PARACHUTE_DEPLOYMENT,
         .parachutes_deployed_flag = 0,
-        .heater_control_flag = 0,
     };
 
     SD_Card_Wrapper::Config sd_card_config = {
@@ -238,8 +236,6 @@ public:
     // Sensor power
     const int SENSOR_POWER_ENABLE_PIN = 17;
 
-    const int LAUNCH_RAIL_SWITCH_PIN = 21; // Switch
-
     // Wire0
     const int WIRE0_SCL = 1;
     const int WIRE0_SDA = 0;
@@ -292,6 +288,11 @@ public:
     const int PYRO_CHANNEL_1 = 19;
     const int PYRO_CHANNEL_2 = 18;
     const int PYRO_CHANNEL_FIRE_TIME = 5000;
+    
+    const int LAUNCH_RAIL_SWITCH_PIN = 21;
+    const int LAUNCH_RAIL_SWITCH_OFF_THRESHOLD = 5000;
+    const int DESCENT_TIME_BEFORE_PARACHUTE_DEPLOYMENT = 30000;
+    const int LAUNCH_RAIL_SWITCH_ALTITUDE_THRESHOLD = 300;
 
     // Actions
     const int TIMED_ACTION_INITIAL_DELAY = 10000;
