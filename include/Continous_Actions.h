@@ -59,6 +59,11 @@ void Actions::runContinousActions(Sensors &sensors, Navigation &navigation, Comm
     }
   }
 
+  if (descentActionEnabled)
+  {
+    runDescentAction(logging, config, sensors, navigation);
+  }
+
   // Run the pyro channel manager action
   if (pyroChannelManagerActionEnabled)
   {
@@ -209,10 +214,8 @@ void Actions::runRangingAction(Navigation &navigation, Config &config)
 
 void Actions::runGetCommunicationCycleStartAction(Navigation &navigation, Config &config)
 {
-  // Serial.println("GPS epoch time: " + String(navigation.navigation_data.gps.epoch_time));
   if (millis() - lastCommunicationCycle <= 3000)
   {
-    // Serial.println("Communication cycle already started: " + String(millis() - lastCommunicationCycle));
     return;
   }
   if (navigation.navigation_data.gps.epoch_time == 0)
@@ -270,6 +273,66 @@ void Actions::runPyroChannelManagerAction(Config &config)
         // Reset the pyro channel flag, but keep the fire time as it will not be fired again
         pyroChannelShouldBeFired[i] = false;
       }
+    }
+  }
+}
+
+void Actions::runDescentAction(Logging &logging, Config &config, Sensors &sensors, Navigation &navigation)
+{
+  // If parachute has been deployed, there is nothing to do
+  if (config.config_file_values.parachutes_deployed_flag == 1)
+  {
+    return;
+  }
+
+  // Check if the descent has already been recorded as started
+  if (config.config_file_values.descent_flag == 1)
+  {
+    // Check if the remaining descent time has elapsed
+    if (config.config_file_values.remaining_descent_time <= 0)
+    {
+      // Deploy the parachute
+      pyroChannelShouldBeFired[0] = true;
+      pyroChannelShouldBeFired[1] = true;
+      config.config_file_values.parachutes_deployed_flag = 1;
+      logging.writeConfig(config);
+    }
+    else
+    {
+      // Decrease the remaining descent time by the time since the last loop
+      config.config_file_values.remaining_descent_time -= total_loop_time;
+      logging.writeConfig(config);
+    }
+  }
+  else
+  {
+    // Check if the launch rail switch is off
+    if (digitalRead(config.LAUNCH_RAIL_SWITCH_PIN) == LOW)
+    {
+      if (launchRailSwitchOffTime == 0)
+      {
+        launchRailSwitchOffTime = millis();
+      }
+      
+      // Check if the launch rail switch has been off for the threshold time
+      if (millis() - launchRailSwitchOffTime >= config.LAUNCH_RAIL_SWITCH_OFF_THRESHOLD)
+      {
+        // Only allow the descent to be recorded as started if the altitude is above the threshold
+        if ((sensors.data.onBoardBaro.altitude < config.LAUNCH_RAIL_SWITCH_ALTITUDE_THRESHOLD) or (navigation.navigation_data.gps.altitude < config.LAUNCH_RAIL_SWITCH_ALTITUDE_THRESHOLD))
+        {
+          return;
+        }
+
+        // Record the descent as started
+        config.config_file_values.descent_flag = 1;
+        config.config_file_values.remaining_descent_time = config.DESCENT_TIME_BEFORE_PARACHUTE_DEPLOYMENT;
+        logging.writeConfig(config);
+      }
+    }
+    // Reset the launch rail switch off time if the switch is high
+    else
+    {
+      launchRailSwitchOffTime = 0;
     }
   }
 }

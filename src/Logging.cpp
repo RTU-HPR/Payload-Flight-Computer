@@ -132,7 +132,6 @@ bool Logging::readConfig(Config &config)
   config.config_file_values.descent_flag = (config_string_values[0]).toInt();
   config.config_file_values.remaining_descent_time = (config_string_values[1]).toInt();
   config.config_file_values.parachutes_deployed_flag = (config_string_values[2]).toInt();
-  config.config_file_values.heater_control_flag = (config_string_values[3]).toInt();
 
   return true;
 }
@@ -142,8 +141,7 @@ void Logging::writeConfig(Config &config)
   // Convert the struct to a string
   String config_string = String(config.config_file_values.descent_flag) + "," +
                          String(config.config_file_values.remaining_descent_time) + "," +
-                         String(config.config_file_values.parachutes_deployed_flag) + "," +
-                         String(config.config_file_values.heater_control_flag);
+                         String(config.config_file_values.parachutes_deployed_flag);
 
   // Write the string to the config file
   if (!sd_card_wrapper.write_config(config_string, config.sd_card_config))

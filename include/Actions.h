@@ -54,8 +54,16 @@ private:
     bool pyroChannelShouldBeFired[2] = {false, false};
     unsigned long pyroChannelFireTimes[2] = {0, 0};
 
+    void runDescentAction(Logging &logging, Config &config, Sensors &sensors, Navigation &navigation);
+    bool descentActionEnabled = true;
+    unsigned long launchRailSwitchOffTime = 0;
+
     // Timed actions
     void runTimedActions(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Config &config);
+
+    void runBuzzerAction(Config &config);
+    bool buzzerActionEnabled = true;
+    unsigned long buzzerLastStateTime = 0;
 
     void runEssentialDataSendAction(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Config &config);
     bool dataEssentialSendActionEnabled = true;
