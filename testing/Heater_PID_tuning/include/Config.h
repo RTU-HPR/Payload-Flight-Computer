@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <EEPROM.h>
 
 // Public libraries
 #include <PCF8575.h>

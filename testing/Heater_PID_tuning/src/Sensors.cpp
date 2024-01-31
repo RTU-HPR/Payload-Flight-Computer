@@ -104,33 +104,13 @@ bool Sensors::begin(Config &config)
 
 void Sensors::readSensors()
 {
-  last_on_board_baro_read_millis = millis();
   readOnBoardBaro();
-  on_board_baro_read_time = millis() - last_on_board_baro_read_millis;
-
-  last_imu_read_millis = millis();
   readImu();
-  imu_read_time = millis() - last_imu_read_millis;
-
-  last_battery_voltage_read_millis = millis();
   readBatteryVoltage();
-  battery_voltage_read_time = millis() - last_battery_voltage_read_millis;
-
-  last_container_heater_voltage_read_millis = millis();
   readContainerHeaterVoltage();
-  container_heater_voltage_read_time = millis() - last_container_heater_voltage_read_millis;
-
-  last_outside_thermistor_read_millis = millis();
   readOutsideThermistor();
-  outside_thermistor_read_time = millis() - last_outside_thermistor_read_millis;
-
-  // last_container_baro_read_millis = millis();
   // readContainerBarometer();
-  // container_baro_read_time = millis() - last_container_baro_read_millis;
-
-  // last_container_temperature_read_millis = millis();
   // readContainerTemperature();
-  // container_temperature_read_time = millis() - last_container_temperature_read_millis;
 }
 
 bool Sensors::beginPortExtender(Config &config)

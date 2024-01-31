@@ -1,15 +1,6 @@
 #pragma once
 #include <Config.h>
 
-// Get performance monitoring global variables
-extern int on_board_baro_read_time;
-extern int imu_read_time;
-extern int battery_voltage_read_time;
-extern int container_heater_voltage_read_time;
-extern int container_baro_read_time;
-extern int container_temperature_read_time;
-extern int outside_thermistor_read_time;
-
 class Sensors
 {
 private:
@@ -131,7 +122,7 @@ public:
    * @param config The configuration object containing the sensor settings.
    * @return True if the initialization is successful, false otherwise.
    */
-  bool begin(Logging &logging, Config &config);
+  bool begin(Config &config);
 
   /**
    * @brief Reads data from all sensors.
