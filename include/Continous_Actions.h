@@ -64,10 +64,10 @@ void Actions::runContinousActions(Sensors &sensors, Navigation &navigation, Comm
     runDescentAction(logging, config, sensors, navigation);
   }
 
-  // Run the pyro channel manager action
-  if (pyroChannelManagerActionEnabled)
+  // Run the recovery channel manager action
+  if (recoveryChannelManagerActionEnabled)
   {
-    runPyroChannelManagerAction(config);
+    runRecoveryChannelManagerAction(config);
   }
 }
 
@@ -137,27 +137,27 @@ void Actions::runCommandReceiveAction(Communication &communication, Logging &log
     }
     else if (packet_id == 1003)
     {
-      pyroFireActionEnabled = true;
+      recoveryFireActionEnabled = true;
 
-      // Get the pyro channel
-      Converter pyroChannel[1];
+      // Get the recovery channel
+      Converter recoveryChannel[1];
 
-      // The first value is the packet id, and the second is the pyro channel
-      extract_ccsds_data_values(packet_data, pyroChannel, "uint8");
+      // The first value is the packet id, and the second is the recovery channel
+      extract_ccsds_data_values(packet_data, recoveryChannel, "uint8");
 
-      // Set the appropriate pyro channel flag
-      if (pyroChannel[0].i8 == 1)
+      // Set the appropriate recovery channel flag
+      if (recoveryChannel[0].i8 == 1)
       {
-        pyroChannelShouldBeFired[0] = true;
+        recoveryChannelShouldBeFired[0] = true;
       }
-      else if (pyroChannel[0].i8 == 2)
+      else if (recoveryChannel[0].i8 == 2)
       {
-        pyroChannelShouldBeFired[1] = true;
+        recoveryChannelShouldBeFired[1] = true;
       }
       else
       {
-        Serial.println("Invalid pyro channel: " + String(pyroChannel[0].i8));
-        pyroFireActionEnabled = false;
+        Serial.println("Invalid recovery channel: " + String(recoveryChannel[0].i8));
+        recoveryFireActionEnabled = false;
       }
     }
     else
@@ -232,46 +232,46 @@ void Actions::runGetCommunicationCycleStartAction(Navigation &navigation, Config
   }
 }
 
-void Actions::runPyroChannelManagerAction(Config &config)
+void Actions::runRecoveryChannelManagerAction(Config &config)
 {
-  // Check if the pyro channel should be fired
+  // Check if the recovery channel should be fired
   for (int i = 0; i < 2; i++)
   {
-    if (pyroChannelShouldBeFired[i])
+    if (recoveryChannelShouldBeFired[i])
     {
-      // If the pyro channel has not been fired yet, enable it
-      if (pyroChannelFireTimes[i] == 0)
+      // If the recovery channel has not been fired yet, enable it
+      if (recoveryChannelFireTimes[i] == 0)
       {
-        pyroChannelFireTimes[i] = millis();
+        recoveryChannelFireTimes[i] = millis();
         if (i == 0)
         {
-          digitalWrite(config.PYRO_CHANNEL_1, HIGH);
-          Serial.println("Pyro channel 1 fired");
+          digitalWrite(config.RECOVERY_CHANNEL_1, HIGH);
+          Serial.println("Recovery channel 1 fired");
         }
         else if (i == 1)
         {
-          digitalWrite(config.PYRO_CHANNEL_2, HIGH);
-          Serial.println("Pyro channel 2 fired");
+          digitalWrite(config.RECOVERY_CHANNEL_2, HIGH);
+          Serial.println("Recovery channel 2 fired");
         }
       }
 
-      // Check if the pyro channel should be toggled off
-      if (millis() - pyroChannelFireTimes[i] >= config.PYRO_CHANNEL_FIRE_TIME)
+      // Check if the recovery channel should be toggled off
+      if (millis() - recoveryChannelFireTimes[i] >= config.RECOVERY_CHANNEL_FIRE_TIME)
       {
-        // Disable the pyro channel
+        // Disable the recovery channel
         if (i == 0)
         {
-          digitalWrite(config.PYRO_CHANNEL_1, LOW);
-          Serial.println("Pyro channel 1 turned off");
+          digitalWrite(config.RECOVERY_CHANNEL_1, LOW);
+          Serial.println("Recovery channel 1 turned off");
         }
         else if (i == 1)
         {
-          digitalWrite(config.PYRO_CHANNEL_2, LOW);
-          Serial.println("Pyro channel 2 turned off");
+          digitalWrite(config.RECOVERY_CHANNEL_2, LOW);
+          Serial.println("Recovery channel 2 turned off");
         }
 
-        // Reset the pyro channel flag, but keep the fire time as it will not be fired again
-        pyroChannelShouldBeFired[i] = false;
+        // Reset the recovery channel flag, but keep the fire time as it will not be fired again
+        recoveryChannelShouldBeFired[i] = false;
       }
     }
   }
@@ -292,8 +292,8 @@ void Actions::runDescentAction(Logging &logging, Config &config, Sensors &sensor
     if (config.config_file_values.remaining_descent_time <= 0)
     {
       // Deploy the parachute
-      pyroChannelShouldBeFired[0] = true;
-      pyroChannelShouldBeFired[1] = true;
+      recoveryChannelShouldBeFired[0] = true;
+      recoveryChannelShouldBeFired[1] = true;
       config.config_file_values.parachutes_deployed_flag = 1;
       logging.writeConfig(config);
     }
@@ -463,8 +463,6 @@ String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigatio
   // Battery/Heater current
   packet += String(sensors.data.battery.voltage, 2);
   packet += ",";
-  packet += String(sensors.data.containerHeaterVoltage.voltage / (float)config.HEATER_RESISTOR_VALUE, 2);
-  packet += ",";
   // Performance/debugging
   packet += String(rp2040.getUsedHeap());
   packet += ",";
@@ -487,8 +485,6 @@ String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigatio
   packet += String(imu_read_time);
   packet += ",";
   packet += String(battery_voltage_read_time);
-  packet += ",";
-  packet += String(container_heater_voltage_read_time);
   packet += ",";
   packet += String(container_baro_read_time);
   packet += ",";

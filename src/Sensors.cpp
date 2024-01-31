@@ -4,7 +4,6 @@
 unsigned int last_on_board_baro_read_millis = 0;
 unsigned int last_imu_read_millis = 0;
 unsigned int last_battery_voltage_read_millis = 0;
-unsigned int last_container_heater_voltage_read_millis = 0;
 unsigned int last_container_baro_read_millis = 0;
 unsigned int last_container_temperature_read_millis = 0;
 unsigned int last_outside_thermistor_read_millis = 0;
@@ -17,18 +16,6 @@ bool Sensors::begin(Logging &logging, Config &config)
   analogReadResolution(12);
 
   // MAIN BOARD
-  // Initialize port extender
-  if (!beginPortExtender(config))
-  {
-    String errorString = "Port extender begin fail";
-    logging.recordError(errorString);
-    success = false;
-  }
-  else
-  {
-    Serial.println("Port extender initialization complete");
-  }
-
   // Initialize MS56XX
   if (!beginOnBoardBaro(config))
   {
@@ -77,18 +64,6 @@ bool Sensors::begin(Logging &logging, Config &config)
     Serial.println("Battery voltage reader initialization complete");
   }
 
-  // Initialize container heater voltafe reader
-  if (!beginContainerHeaterVoltageReader(config))
-  {
-    String errorString = "Container heater voltage reader begin fail";
-    logging.recordError(errorString);
-    success = false;
-  }
-  else
-  {
-    Serial.println("Container heater voltage reader initialization complete");
-  }
-
   // HEATED CONTAINER
   // Initialize container barometer
   if (!beginContainerBaro(config))
@@ -132,10 +107,6 @@ void Sensors::readSensors()
   readBatteryVoltage();
   battery_voltage_read_time = millis() - last_battery_voltage_read_millis;
 
-  last_container_heater_voltage_read_millis = millis();
-  readContainerHeaterVoltage();
-  container_heater_voltage_read_time = millis() - last_container_heater_voltage_read_millis;
-
   last_outside_thermistor_read_millis = millis();
   readOutsideThermistor();
   outside_thermistor_read_time = millis() - last_outside_thermistor_read_millis;
@@ -147,24 +118,6 @@ void Sensors::readSensors()
   // last_container_temperature_read_millis = millis();
   // readContainerTemperature();
   // container_temperature_read_time = millis() - last_container_temperature_read_millis;
-}
-
-bool Sensors::beginPortExtender(Config &config)
-{
-  // Port extender
-  // Initialize, set all pins to low, DON'T use it anywhere else
-  // It seemed to cause problems to other I2C devices on the same bus
-  // Further testing should be done on the new version of the software
-  PCF8575 _port_extender = PCF8575(config.pcf_config.i2c_address, config.pcf_config.wire);
-  if (!_port_extender.begin())
-  {
-    Serial.println("Port extender initialization failed!");
-    return false;
-  }
-  _port_extender.write(config.PORT_EXTENDER_BUZZER_PIN, LOW);
-  _port_extender.write(config.PORT_EXTENDER_LED_2_PIN, LOW);
-  _port_extender.write(config.PORT_EXTENDER_LED_1_PIN, LOW);
-  return true;
 }
 
 bool Sensors::beginOnBoardBaro(Config &config)
@@ -205,12 +158,6 @@ bool Sensors::beginOutsideThermistor(Config &config)
 bool Sensors::beginBatteryVoltageReader(Config &config)
 {
   _batteryVoltageReader.begin(config.battery_voltage_reader_config);
-  return true;
-}
-
-bool Sensors::beginContainerHeaterVoltageReader(Config & config)
-{
-  _containerHeaterVoltageReader.begin(config.container_heater_voltage_reader_config);
   return true;
 }
 
@@ -267,18 +214,6 @@ bool Sensors::readBatteryVoltage()
   }
   Serial.println("Battery voltage reading failed!");
   return false;
-}
-
-bool Sensors::readContainerHeaterVoltage()
-{
-  // Read voltage and do calculations
-  if (_containerHeaterVoltageReader.read(data.containerHeaterVoltage))
-  {
-    return true;
-  }
-  Serial.println("Container heater voltage reading failed!");
-  return false;
-
 }
 
 bool Sensors::readOutsideThermistor()

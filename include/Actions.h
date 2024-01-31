@@ -49,10 +49,10 @@ private:
     bool getCommunicationCycleStartActionEnabled = true;
     unsigned long lastCommunicationCycle = 0;
 
-    void runPyroChannelManagerAction(Config &config);
-    bool pyroChannelManagerActionEnabled = true;
-    bool pyroChannelShouldBeFired[2] = {false, false};
-    unsigned long pyroChannelFireTimes[2] = {0, 0};
+    void runRecoveryChannelManagerAction(Config &config);
+    bool recoveryChannelManagerActionEnabled = true;
+    bool recoveryChannelShouldBeFired[2] = {false, false};
+    unsigned long recoveryChannelFireTimes[2] = {0, 0};
 
     void runDescentAction(Logging &logging, Config &config, Sensors &sensors, Navigation &navigation);
     bool descentActionEnabled = true;
@@ -84,9 +84,9 @@ private:
     bool formatStorageActionEnabled = false;
     uint16_t formatResponseId = 0;
 
-    void runPyroFireAction(Communication &communication, Navigation &navigation, Config &config);
-    bool pyroFireActionEnabled = false;
-    uint16_t pyroResponseId = 0;
+    void runRecoveryFireAction(Communication &communication, Navigation &navigation, Config &config);
+    bool recoveryFireActionEnabled = false;
+    uint16_t recoveryResponseId = 0;
 
 public:
     void runAllActions(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Heater &heater, Config &config);

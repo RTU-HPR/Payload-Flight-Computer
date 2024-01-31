@@ -17,19 +17,6 @@ bool Payload::initCommunicationBusses()
     success = false;
   }
 
-  // Wire1
-  if (Wire1.setSCL(config.WIRE1_SCL) && Wire1.setSDA(config.WIRE1_SDA))
-  {
-    Wire1.begin();
-    Serial.println("Wire1 communication bus initialized");
-  }
-  else
-  {
-    String errorString = "Wire1 begin fail";
-    logging.recordError(errorString);
-    success = false;
-  }
-
   // SPI
   if (SPI.setRX(config.SPI0_RX) && SPI.setTX(config.SPI0_TX) && SPI.setSCK(config.SPI0_SCK))
   {
@@ -76,13 +63,13 @@ void Payload::begin()
 
   Serial.println("Sensor power enabled");
 
-  // Set the pyro channels to output and pull them low
-  pinMode(config.PYRO_CHANNEL_1, OUTPUT_12MA);
-  pinMode(config.PYRO_CHANNEL_2, OUTPUT_12MA);
-  digitalWrite(config.PYRO_CHANNEL_1, LOW);
-  digitalWrite(config.PYRO_CHANNEL_2, LOW);
+  // Set the recovery channels to output and pull them low
+  pinMode(config.RECOVERY_CHANNEL_1, OUTPUT_12MA);
+  pinMode(config.RECOVERY_CHANNEL_2, OUTPUT_12MA);
+  digitalWrite(config.RECOVERY_CHANNEL_1, LOW);
+  digitalWrite(config.RECOVERY_CHANNEL_2, LOW);
 
-  Serial.println("Pyro channels set to output and pulled low");
+  Serial.println("Recovery channels set to output and pulled low");
 
   // Set the launch rail switch to input
   pinMode(config.LAUNCH_RAIL_SWITCH_PIN, INPUT);
