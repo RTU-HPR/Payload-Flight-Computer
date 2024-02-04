@@ -270,9 +270,16 @@ public:
     // Actions
     const int TIMED_ACTION_INITIAL_DELAY = 10000;
     // Data send action interval
-    const int COMMUNICATION_CYCLE_INTERVAL = 12000;
-    const int COMMUNICATION_RESPONSE_SEND_TIME = 5000;
-    const int COMMUNICATION_ESSENTIAL_DATA_SEND_TIME = 9000;
+    // 15 second cycle
+    // 0 to 4 seconds - listen for command
+    // 4 to 9 seconds - send command response if required
+    // 9 to 12 seconds - balloon sends essential data
+    // 12 to 15 seconds - send essential data
+    const int COMMUNICATION_CYCLE_INTERVAL = 15; // Seconds
+    const int COMMUNICATION_RESPONSE_SEND_TIME_START = 4000;
+    const int COMMUNICATION_RESPONSE_SEND_TIME_END = 9000;
+    const int COMMUNICATION_ESSENTIAL_DATA_SEND_TIME_START = 12000;
+    const int COMMUNICATION_ESSENTIAL_DATA_SEND_TIME_END = 15000;
 
     // Sendable commands
     const int PFC_ESSENTIAL_DATA_RESPONSE = 100;

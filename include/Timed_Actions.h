@@ -21,7 +21,7 @@ void Actions::runTimedActions(Sensors &sensors, Navigation &navigation, Communic
 
 void Actions::runEssentialDataSendAction(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Config &config)
 {
-  if (millis() - lastCommunicationCycle >= config.COMMUNICATION_ESSENTIAL_DATA_SEND_TIME && millis() - lastCommunicationCycle <= config.COMMUNICATION_CYCLE_INTERVAL)
+  if (millis() - lastCommunicationCycle >= config.COMMUNICATION_ESSENTIAL_DATA_SEND_TIME_START && millis() - lastCommunicationCycle <= config.COMMUNICATION_ESSENTIAL_DATA_SEND_TIME_END)
   {
     String msg_str = createEssentialDataPacket(sensors, navigation, logging, config);
 

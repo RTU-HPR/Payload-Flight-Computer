@@ -223,12 +223,11 @@ void Actions::runGetCommunicationCycleStartAction(Navigation &navigation, Config
     return;
   }
 
-  int comm_cycle_interval_sec = config.COMMUNICATION_CYCLE_INTERVAL / 1000;
-  if (navigation.navigation_data.gps.second % comm_cycle_interval_sec == 0)
+  if (navigation.navigation_data.gps.second % config.COMMUNICATION_CYCLE_INTERVAL == 0)
   {
     lastCommunicationCycle = millis();
     dataEssentialSendActionEnabled = true;
-    Serial.println("New communication cycle started: " + String(lastCommunicationCycle) + " " + String(navigation.navigation_data.gps.second));
+    Serial.println("New communication cycle started: " + String(lastCommunicationCycle) + " " + String(navigation.navigation_data.gps.hour) + ":" + String(navigation.navigation_data.gps.minute) + ":" + String(navigation.navigation_data.gps.second));
   }
 }
 
