@@ -15,17 +15,6 @@ bool Payload::initCommunicationBusses()
     success = false;
   }
 
-  // Wire1
-  if (Wire1.setSCL(config.WIRE1_SCL) && Wire1.setSDA(config.WIRE1_SDA))
-  {
-    Wire1.begin();
-    Serial.println("Wire1 communication bus initialized");
-  }
-  else
-  {
-    success = false;
-  }
-
   // SPI
   if (SPI.setRX(config.SPI0_RX) && SPI.setTX(config.SPI0_TX) && SPI.setSCK(config.SPI0_SCK))
   {
@@ -70,9 +59,8 @@ void Payload::begin()
 
   Serial.println("Sensor power enabled");
 
-  Serial.println("Pyro channels set to output and pulled low");
-
-  Serial.println("Launch rail switch set to input");
+  communication.beginWiFi(config.wifi_config);
+  Serial.println("WiFi setup complete");
 
   // Set the heater pin to output and pull it low
   pinMode(config.heater_config.heater_pin, OUTPUT_12MA);

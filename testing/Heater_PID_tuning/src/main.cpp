@@ -31,4 +31,10 @@ void loop()
   last_total_loop_millis = millis();
   payload.actions.runAllActions(payload.sensors, payload.communication, payload.heater, payload.config);
   total_loop_time = millis() - last_total_loop_millis;
+
+  // Make sure the loop time is at least 35ms, as this is the average time for the loop to run in the main code
+  if (total_loop_time < 35)
+  {
+    delay(35 - total_loop_time);
+  }
 }

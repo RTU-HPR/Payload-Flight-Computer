@@ -33,13 +33,6 @@ private:
   AdcVoltage _batteryVoltageReader;
 
   /**
-   * @brief Object representing the container heater voltage reader.
-   * 
-   * This class provides functionality to interface with the container heater voltage reader.
-  */
-  AdcVoltage _containerHeaterVoltageReader;
-
-  /**
    * @brief Object representing the container barometer.
    *
    * This class provides functionality to interface with the BMP180 barometer.
@@ -108,7 +101,6 @@ public:
     MS56XX::MS56XX_Data onBoardBaro;
     IMU_Data imu;
     AdcVoltage::AdcVoltage_Data battery;
-    AdcVoltage::AdcVoltage_Data containerHeaterVoltage;
     Thermistor_Data outsideThermistor;
     ContainerBarometer_Data containerBaro;
     ContainerTemperature_Data containerTemperature;
@@ -129,14 +121,6 @@ public:
    *
    */
   void readSensors();
-
-  /**
-   * Initializes the port extender.
-   *
-   * @param config The configuration object.
-   * @return True if the port extender was successfully initialized, false otherwise.
-   */
-  bool beginPortExtender(Config &config);
 
   /**
    * Initializes the on-board barometer sensor.
@@ -169,14 +153,6 @@ public:
    * @return True if the initialization is successful, false otherwise.
    */
   bool beginBatteryVoltageReader(Config &config);
-
-  /**
-   * @brief Initializes the container heater voltage reader.
-   *
-   * @param config The configuration object containing the necessary settings for the container heater current reader.
-   * @return True if the initialization is successful, false otherwise.
-   */
-  bool beginContainerHeaterVoltageReader(Config &config);
 
   /**
    * @brief Initializes the container barometer sensor.
@@ -214,14 +190,6 @@ public:
    * @return true if the battery voltage was successfully read, false otherwise.
    */
   bool readBatteryVoltage();
-
-  /**
-   * @brief Reads the container heater voltage.
-   * @param config The configuration object containing the settings for the sensor.
-   * 
-   * @return true if the voltage was successfully read, false otherwise.
-   */
-  bool readContainerHeaterVoltage();
 
   /**
    * @brief Reads the outside thermistor temperature.

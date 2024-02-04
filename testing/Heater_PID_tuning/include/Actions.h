@@ -10,8 +10,8 @@ private:
     // Continuous actions
     void runContinousActions(Sensors &sensors, Communication &communication, Heater &heater, Config &config);
 
-    void runCommandReceiveAction(Communication &communication, Config &config);
-    bool commandReceiveActionEnabled = true;
+    void runCommunicationAction(Communication &communication, const Sensors &sensors, const Config &config, Heater &heater);
+    bool communicationActionEnabled = true;
 
     void runSensorAction(Sensors &sensors);
     bool sensorActionEnabled = true;
