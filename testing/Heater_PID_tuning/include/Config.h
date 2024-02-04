@@ -37,7 +37,7 @@ public:
   WiFi_Config wifi_config{
       "Samsung S20", // Gundars phone hotspot name
       "123456789",   // Gundars phone hotspot password
-      10055,         // This ports should not change
+      10035,         // This ports should not change
       10045          // This ports should not change
   };
 
