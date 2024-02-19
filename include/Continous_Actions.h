@@ -123,19 +123,19 @@ void Actions::runCommandReceiveAction(Communication &communication, Logging &log
     Serial.println("Packet ID: " + String(packet_id));
 
     // Set the action flag according to the received command
-    if (packet_id == 1000)
+    if (packet_id == config.PFC_COMPLETE_DATA_REQUEST)
     {
       completeDataRequestActionEnabled = true;
     }
-    else if (packet_id == 1001)
+    else if (packet_id == config.PFC_INFO_ERROR_REQUEST)
     {
       infoErrorRequestActionEnabled = true;
     }
-    else if (packet_id == 1002)
+    else if (packet_id == config.PFC_FORMAT_REQUEST)
     {
       formatStorageActionEnabled = true;
     }
-    else if (packet_id == 1003)
+    else if (packet_id == config.PFC_RECOVERY_REQUEST)
     {
       recoveryFireActionEnabled = true;
 

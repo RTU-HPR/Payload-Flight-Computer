@@ -181,6 +181,13 @@ bool Sensors::beginContainerTemperatureSensor(Config &config)
   {
     return false;
   }
+
+  // Read the temperature sensor to get the first 50 value
+  for (int i = 0; i < 50; i++)
+  {
+    data.containerTemperature.filtered_temperature = _containerTemperatureFilter.updateEstimate(_containerTemperatureSensor.readTemperature());
+  }
+
   return true;
 }
 
@@ -235,15 +242,11 @@ bool Sensors::readContainerBarometer()
 {
   float new_pressure = _containerBaro.readPressure();
   float new_temperature = _containerBaro.readTemperature();
-
-  if ((new_pressure > 100 && new_pressure < 120000) && (new_temperature > -100 && new_temperature < 100)) // Between 100 and 120_000 Pa and -100 and 100 C
-  {
-    data.containerBaro.pressure = new_pressure;
-    data.containerBaro.temperature = new_temperature;
-    return true;
-  }
-  Serial.println("Container barometer reading failed!");
-  return false;
+  
+  // No value checking is intended
+  data.containerBaro.pressure = new_pressure;
+  data.containerBaro.temperature = new_temperature;
+  return true;
 }
 
 bool Sensors::readContainerTemperature()

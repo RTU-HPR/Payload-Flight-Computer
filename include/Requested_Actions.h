@@ -118,7 +118,7 @@ void Actions::runFormatStorageAction(Communication &communication, Logging &logg
   String msg_str = String(success);
 
   uint16_t ccsds_packet_length;
-  byte *ccsds_packet = create_ccsds_telemetry_packet(config.PFC_COMPLETE_DATA_RESPONSE, formatResponseId, navigation.navigation_data.gps.epoch_time, 0, msg_str, ccsds_packet_length);
+  byte *ccsds_packet = create_ccsds_telemetry_packet(config.PFC_FORMAT_RESPONSE, formatResponseId, navigation.navigation_data.gps.epoch_time, 0, msg_str, ccsds_packet_length);
 
   // Send packet
   if (!communication.sendRadio(ccsds_packet, ccsds_packet_length))
@@ -138,7 +138,7 @@ void Actions::runRecoveryFireAction(Communication &communication, Navigation &na
   String msg_str = "1"; // Success
 
   uint16_t ccsds_packet_length;
-  byte *ccsds_packet = create_ccsds_telemetry_packet(config.PFC_COMPLETE_DATA_RESPONSE, recoveryResponseId, navigation.navigation_data.gps.epoch_time, 0, msg_str, ccsds_packet_length);
+  byte *ccsds_packet = create_ccsds_telemetry_packet(config.PFC_RECOVERY_RESPONSE, recoveryResponseId, navigation.navigation_data.gps.epoch_time, 0, msg_str, ccsds_packet_length);
 
   // Send packet
   if (!communication.sendRadio(ccsds_packet, ccsds_packet_length))
@@ -148,6 +148,7 @@ void Actions::runRecoveryFireAction(Communication &communication, Navigation &na
     return;
   }
   recoveryResponseId++;
+  recoveryFireActionEnabled = false;
   // Free memory
   delete[] ccsds_packet; // VERY IMPORTANT, otherwise a significant memory leak will occur
 }

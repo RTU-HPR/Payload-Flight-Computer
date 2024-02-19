@@ -71,6 +71,10 @@ void Payload::begin()
 
   Serial.println("Recovery channels set to output and pulled low");
 
+  // Set the buzzer pin to output and pull it low
+  pinMode(config.BUZZER_PIN, OUTPUT_12MA);
+  digitalWrite(config.BUZZER_PIN, LOW);
+
   // Set the launch rail switch to input
   pinMode(config.LAUNCH_RAIL_SWITCH_PIN, INPUT);
 
