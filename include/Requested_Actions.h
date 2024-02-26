@@ -3,7 +3,7 @@
 void Actions::runRequestedActions(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Heater &heater, Config &config)
 {
   // Check if the communication cycle is within the response send time
-  if (!(millis() - lastCommunicationCycle >= config.COMMUNICATION_RESPONSE_SEND_TIME && millis() - lastCommunicationCycle <= config.COMMUNICATION_ESSENTIAL_DATA_SEND_TIME))
+  if (!(millis() - lastCommunicationCycle >= config.COMMUNICATION_RESPONSE_SEND_TIME_START && millis() - lastCommunicationCycle <= config.COMMUNICATION_ESSENTIAL_DATA_SEND_TIME_END))
   {
     return;
   }
@@ -20,9 +20,9 @@ void Actions::runRequestedActions(Sensors &sensors, Navigation &navigation, Comm
   {
     runFormatStorageAction(communication, logging, navigation, config);
   }
-  if (pyroFireActionEnabled)
+  if (recoveryFireActionEnabled)
   {
-    runPyroFireAction(communication, navigation, config);
+    runRecoveryFireAction(communication, navigation, config);
   }
 }
 
@@ -43,12 +43,16 @@ void Actions::runInfoErrorSendAction(Communication &communication, Logging &logg
   // Send packet
   if (!communication.sendRadio(ccsds_packet, ccsds_packet_length))
   {
-    // Do nothing for now
+    // Add the message back to the queue
+    logging.addToInfoErrorQueue(msg_str);
+    delete[] ccsds_packet;
+    infoErrorRequestActionEnabled = false;
+    return;
   }
   infoErrorResponseId++;
   infoErrorRequestActionEnabled = false;
   // Free memory
-  delete[] ccsds_packet; // VERY IMPORTANT, otherwise a significant memory leak will occur
+  delete[] ccsds_packet;
 }
 
 void Actions::runCompleteDataRequestAction(Sensors &sensors, Navigation &navigation, Communication &communication, Heater &heater, Config &config)
@@ -76,7 +80,7 @@ String Actions::createCompleteDataPacket(Sensors &sensors, Navigation &navigatio
   String packet = "";
   packet += String(sensors.data.containerBaro.temperature, 1);
   packet += ",";
-  packet += String(sensors.data.containerTemperature.temperature, 1);
+  packet += String(sensors.data.containerTemperature.filtered_temperature, 1);
   packet += ",";
   packet += String(sensors.data.onBoardBaro.temperature, 1);
   packet += ",";
@@ -114,7 +118,7 @@ void Actions::runFormatStorageAction(Communication &communication, Logging &logg
   String msg_str = String(success);
 
   uint16_t ccsds_packet_length;
-  byte *ccsds_packet = create_ccsds_telemetry_packet(config.PFC_COMPLETE_DATA_RESPONSE, formatResponseId, navigation.navigation_data.gps.epoch_time, 0, msg_str, ccsds_packet_length);
+  byte *ccsds_packet = create_ccsds_telemetry_packet(config.PFC_FORMAT_RESPONSE, formatResponseId, navigation.navigation_data.gps.epoch_time, 0, msg_str, ccsds_packet_length);
 
   // Send packet
   if (!communication.sendRadio(ccsds_packet, ccsds_packet_length))
@@ -129,12 +133,12 @@ void Actions::runFormatStorageAction(Communication &communication, Logging &logg
   delete[] ccsds_packet; // VERY IMPORTANT, otherwise a significant memory leak will occur
 }
 
-void Actions::runPyroFireAction(Communication &communication, Navigation &navigation, Config &config)
+void Actions::runRecoveryFireAction(Communication &communication, Navigation &navigation, Config &config)
 {
   String msg_str = "1"; // Success
 
   uint16_t ccsds_packet_length;
-  byte *ccsds_packet = create_ccsds_telemetry_packet(config.PFC_COMPLETE_DATA_RESPONSE, pyroResponseId, navigation.navigation_data.gps.epoch_time, 0, msg_str, ccsds_packet_length);
+  byte *ccsds_packet = create_ccsds_telemetry_packet(config.PFC_RECOVERY_RESPONSE, recoveryResponseId, navigation.navigation_data.gps.epoch_time, 0, msg_str, ccsds_packet_length);
 
   // Send packet
   if (!communication.sendRadio(ccsds_packet, ccsds_packet_length))
@@ -143,7 +147,8 @@ void Actions::runPyroFireAction(Communication &communication, Navigation &naviga
     delete[] ccsds_packet; // VERY IMPORTANT, otherwise a significant memory leak will occur
     return;
   }
-  pyroResponseId++;
+  recoveryResponseId++;
+  recoveryFireActionEnabled = false;
   // Free memory
   delete[] ccsds_packet; // VERY IMPORTANT, otherwise a significant memory leak will occur
 }

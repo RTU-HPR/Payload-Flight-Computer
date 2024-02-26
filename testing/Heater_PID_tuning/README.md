@@ -1,0 +1,2 @@
+# Heating system PID testing and configuration
+The goal of this code is to be able to test and configure the heating system PID coeffieciens accordingly, by  visualizing and saving the data in real-time using Python.

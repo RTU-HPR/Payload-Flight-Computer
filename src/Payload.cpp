@@ -3,7 +3,7 @@
 bool Payload::initCommunicationBusses()
 {
   bool success = true;
-  
+
   // Wire0
   if (Wire.setSCL(config.WIRE0_SCL) && Wire.setSDA(config.WIRE0_SDA))
   {
@@ -13,19 +13,6 @@ bool Payload::initCommunicationBusses()
   else
   {
     String errorString = "Wire0 begin fail";
-    logging.recordError(errorString);
-    success = false;
-  }
-
-  // Wire1
-  if (Wire1.setSCL(config.WIRE1_SCL) && Wire1.setSDA(config.WIRE1_SDA))
-  {
-    Wire1.begin();
-    Serial.println("Wire1 communication bus initialized");
-  }
-  else
-  {
-    String errorString = "Wire1 begin fail";
     logging.recordError(errorString);
     success = false;
   }
@@ -76,13 +63,17 @@ void Payload::begin()
 
   Serial.println("Sensor power enabled");
 
-  // Set the pyro channels to output and pull them low
-  pinMode(config.PYRO_CHANNEL_1, OUTPUT_12MA);
-  pinMode(config.PYRO_CHANNEL_2, OUTPUT_12MA);
-  digitalWrite(config.PYRO_CHANNEL_1, LOW);
-  digitalWrite(config.PYRO_CHANNEL_2, LOW);
+  // Set the recovery channels to output and pull them low
+  pinMode(config.RECOVERY_CHANNEL_1, OUTPUT_12MA);
+  pinMode(config.RECOVERY_CHANNEL_2, OUTPUT_12MA);
+  digitalWrite(config.RECOVERY_CHANNEL_1, LOW);
+  digitalWrite(config.RECOVERY_CHANNEL_2, LOW);
 
-  Serial.println("Pyro channels set to output and pulled low");
+  Serial.println("Recovery channels set to output and pulled low");
+
+  // Set the buzzer pin to output and pull it low
+  pinMode(config.BUZZER_PIN, OUTPUT_12MA);
+  digitalWrite(config.BUZZER_PIN, LOW);
 
   // Set the launch rail switch to input
   pinMode(config.LAUNCH_RAIL_SWITCH_PIN, INPUT);
@@ -130,7 +121,7 @@ void Payload::begin()
   }
 
   Serial.println();
-  
+
   // Send inital error string
   if (!logging.infoErrorQueueEmpty())
   {
@@ -146,7 +137,6 @@ void Payload::begin()
     Serial.println("INITAL INFO/ERROR: " + infoError);
     Serial.println();
     logging.writeError(infoError);
-    communication.sendError(infoError);
   }
 
   // Initialise all sensors
@@ -174,7 +164,6 @@ void Payload::begin()
     Serial.println("SENSOR ERROR: " + infoError);
     Serial.println();
     logging.writeError(infoError);
-    communication.sendError(infoError);
   }
 
   // Initialise GPS
@@ -183,7 +172,6 @@ void Payload::begin()
     String errorString = "GPS begin fail";
     Serial.println(errorString);
     logging.recordError(errorString);
-    communication.sendError(errorString);
   }
   else
   {
@@ -196,17 +184,16 @@ void Payload::begin()
     String errorString = "Ranging begin fail";
     Serial.println(errorString);
     logging.recordError(errorString);
-    communication.sendError(errorString);
   }
   else
   {
     Serial.println("Navigation initialized successfully");
   }
 
-  // Initialise the heater, but don't enable it yet
+  // Initialise the heater
   heater.begin(config.heater_config);
-  heater.enableHeater(sensors.data.containerTemperature.temperature);
+  heater.enableHeater(sensors.data.containerTemperature.filtered_temperature);
   Serial.println("Heater initialized successfully");
-  
+
   Serial.println();
 }

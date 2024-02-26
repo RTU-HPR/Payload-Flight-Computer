@@ -4,11 +4,12 @@
 unsigned int last_on_board_baro_read_millis = 0;
 unsigned int last_imu_read_millis = 0;
 unsigned int last_battery_voltage_read_millis = 0;
+unsigned int last_container_heater_voltage_read_millis = 0;
 unsigned int last_container_baro_read_millis = 0;
 unsigned int last_container_temperature_read_millis = 0;
 unsigned int last_outside_thermistor_read_millis = 0;
 
-bool Sensors::begin(Logging &logging, Config &config)
+bool Sensors::begin(Config &config)
 {
   bool success = true;
   // Change analogRead resolution
@@ -19,8 +20,6 @@ bool Sensors::begin(Logging &logging, Config &config)
   // Initialize MS56XX
   if (!beginOnBoardBaro(config))
   {
-    String errorString = "Onboard barometer begin fail";
-    logging.recordError(errorString);
     success = false;
   }
   else
@@ -31,8 +30,6 @@ bool Sensors::begin(Logging &logging, Config &config)
   // Initialize IMU
   if (!beginImu(config))
   {
-    String errorString = "IMU begin fail";
-    logging.recordError(errorString);
     success = false;
   }
   else
@@ -43,8 +40,6 @@ bool Sensors::begin(Logging &logging, Config &config)
   // Initialize thermistor
   if (!beginOutsideThermistor(config))
   {
-    String errorString = "Thermistor begin fail";
-    logging.recordError(errorString);
     success = false;
   }
   else
@@ -55,8 +50,6 @@ bool Sensors::begin(Logging &logging, Config &config)
   // Initialize battery voltage reader
   if (!beginBatteryVoltageReader(config))
   {
-    String errorString = "Voltage sense begin fail";
-    logging.recordError(errorString);
     success = false;
   }
   else
@@ -68,9 +61,7 @@ bool Sensors::begin(Logging &logging, Config &config)
   // Initialize container barometer
   if (!beginContainerBaro(config))
   {
-    // String errorString = "Container barometer begin fail";
-    // logging.recordError(errorString);
-    // success = false; // Disabled for now, since the sensor is not connected
+    success = false; // Disabled for now, since the sensor is not connected
   }
   else
   {
@@ -80,9 +71,7 @@ bool Sensors::begin(Logging &logging, Config &config)
   // Initialize container temperature sensor
   if (!beginContainerTemperatureSensor(config))
   {
-    // String errorString = "Container temperature begin fail";
-    // logging.recordError(errorString);
-    // success = false; // Disabled for now, since the sensor is not connected
+    success = false; // Disabled for now, since the sensor is not connected
   }
   else
   {
@@ -95,29 +84,12 @@ bool Sensors::begin(Logging &logging, Config &config)
 
 void Sensors::readSensors()
 {
-  last_on_board_baro_read_millis = millis();
   readOnBoardBaro();
-  on_board_baro_read_time = millis() - last_on_board_baro_read_millis;
-
-  last_imu_read_millis = millis();
   readImu();
-  imu_read_time = millis() - last_imu_read_millis;
-
-  last_battery_voltage_read_millis = millis();
   readBatteryVoltage();
-  battery_voltage_read_time = millis() - last_battery_voltage_read_millis;
-
-  last_outside_thermistor_read_millis = millis();
   readOutsideThermistor();
-  outside_thermistor_read_time = millis() - last_outside_thermistor_read_millis;
-
-  // last_container_baro_read_millis = millis();
-  // readContainerBarometer();
-  // container_baro_read_time = millis() - last_container_baro_read_millis;
-
-  // last_container_temperature_read_millis = millis();
-  // readContainerTemperature();
-  // container_temperature_read_time = millis() - last_container_temperature_read_millis;
+  readContainerBarometer();
+  readContainerTemperature();
 }
 
 bool Sensors::beginOnBoardBaro(Config &config)
@@ -242,11 +214,15 @@ bool Sensors::readContainerBarometer()
 {
   float new_pressure = _containerBaro.readPressure();
   float new_temperature = _containerBaro.readTemperature();
-  
-  // No value checking is intended
-  data.containerBaro.pressure = new_pressure;
-  data.containerBaro.temperature = new_temperature;
-  return true;
+
+  if ((new_pressure > 100 && new_pressure < 120000) && (new_temperature > -100 && new_temperature < 100)) // Between 100 and 120_000 Pa and -100 and 100 C
+  {
+    data.containerBaro.pressure = new_pressure;
+    data.containerBaro.temperature = new_temperature;
+    return true;
+  }
+  Serial.println("Container barometer reading failed!");
+  return false;
 }
 
 bool Sensors::readContainerTemperature()

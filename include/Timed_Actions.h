@@ -8,16 +8,20 @@ void Actions::runTimedActions(Sensors &sensors, Navigation &navigation, Communic
     return;
   }
 
-  // Using gps time and millis for redundancy purposes
   if (dataEssentialSendActionEnabled)
   {
     runEssentialDataSendAction(sensors, navigation, communication, logging, config);
+  }
+
+  if (buzzerActionEnabled)
+  {
+    runBuzzerAction(config);
   }
 }
 
 void Actions::runEssentialDataSendAction(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Config &config)
 {
-  if (millis() - lastCommunicationCycle >= config.COMMUNICATION_ESSENTIAL_DATA_SEND_TIME && millis() - lastCommunicationCycle <= config.COMMUNICATION_CYCLE_INTERVAL)
+  if (millis() - lastCommunicationCycle >= config.COMMUNICATION_ESSENTIAL_DATA_SEND_TIME_START && millis() - lastCommunicationCycle <= config.COMMUNICATION_ESSENTIAL_DATA_SEND_TIME_END)
   {
     String msg_str = createEssentialDataPacket(sensors, navigation, logging, config);
 
@@ -38,6 +42,19 @@ void Actions::runEssentialDataSendAction(Sensors &sensors, Navigation &navigatio
 
     // Free memory after the packet has been sent
     delete[] ccsds_packet; // VERY IMPORTANT, otherwise a significant memory leak will occur
+  }
+}
+
+void Actions::runBuzzerAction(Config &config)
+{
+  // If the descent flag is set, or the payload has been on for more than 2 hours, start the beeping
+  if (config.config_file_values.descent_flag == 1 or millis() > config.BUZZER_ACTION_START_TIME)
+  {
+    if (millis() - buzzerLastStateTime >= config.BUZZER_BEEP_TIME)
+    {
+      buzzerLastStateTime = millis();
+      digitalWrite(config.BUZZER_PIN, !digitalRead(config.BUZZER_PIN));
+    }
   }
 }
 
