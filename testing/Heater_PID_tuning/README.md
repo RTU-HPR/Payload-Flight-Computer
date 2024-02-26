@@ -1,4 +1,2 @@
-# Payload-Flight-Computer
-Main repository for RTU HPR Team 2023 payload experiment software (flight computer, base station)
-
-block diagram [here](https://drive.google.com/file/d/1JWPtqqIjti7fqFCMI8yH3zY4sfTKfGcq/view?usp=sharing)
+# Heating system PID testing and configuration
+The goal of this code is to be able to test and configure the heating system PID coeffieciens accordingly, by  visualizing and saving the data in real-time using Python.

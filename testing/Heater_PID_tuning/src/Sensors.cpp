@@ -61,7 +61,7 @@ bool Sensors::begin(Config &config)
   // Initialize container barometer
   if (!beginContainerBaro(config))
   {
-    // success = false; // Disabled for now, since the sensor is not connected
+    success = false; // Disabled for now, since the sensor is not connected
   }
   else
   {
@@ -71,7 +71,7 @@ bool Sensors::begin(Config &config)
   // Initialize container temperature sensor
   if (!beginContainerTemperatureSensor(config))
   {
-    // success = false; // Disabled for now, since the sensor is not connected
+    success = false; // Disabled for now, since the sensor is not connected
   }
   else
   {
@@ -153,6 +153,13 @@ bool Sensors::beginContainerTemperatureSensor(Config &config)
   {
     return false;
   }
+
+  // Read the temperature sensor to get the first 50 value
+  for (int i = 0; i < 50; i++)
+  {
+    data.containerTemperature.filtered_temperature = _containerTemperatureFilter.updateEstimate(_containerTemperatureSensor.readTemperature());
+  }
+
   return true;
 }
 

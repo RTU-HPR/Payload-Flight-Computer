@@ -9,7 +9,7 @@ void Actions::runContinousActions(Sensors &sensors, Communication &communication
   }
 
   // Run the heater action
-  if (heaterActionEnabled)
+  if (heaterActionEnabled && communication.connecetedToWiFi && millis() > 20000)
   {
     runHeaterAction(heater, sensors);
   }
@@ -30,7 +30,7 @@ void Actions::runSensorAction(Sensors &sensors)
 void Actions::runHeaterAction(Heater &heater, const Sensors &sensors)
 {
   // Update the heater
-  heater.update(sensors.data.containerTemperature.filtered_temperature);
+  heater.update(sensors.data.containerTemperature.temperature);
 }
 
 void Actions::runCommunicationAction(Communication &communication, const Sensors &sensors, const Config &config, Heater &heater)
@@ -51,13 +51,17 @@ void Actions::runCommunicationAction(Communication &communication, const Sensors
   data += ",";
   float p, i, d;
   heater.getPidValues(p, i, d);
-  data += String(p, 2);
+  data += String(p * config.heater_config.Kp, 2);
   data += ",";
-  data += String(i, 2);
+  data += String(i * config.heater_config.Ki, 2);
   data += ",";
-  data += String(d, 2);
+  data += String(d * config.heater_config.Kd, 2);
   data += ",";
   data += String(heater.getHeaterPwm());
-
+  data += ",";
+  data += String(sensors.data.onBoardBaro.temperature);
+  data += ",";
+  data += String(sensors.data.battery.voltage);
+  // Serial.println(data);
   communication.WifiSendData(data);
 }

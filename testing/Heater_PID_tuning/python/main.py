@@ -4,7 +4,8 @@ import threading
 import random
 from time import sleep
 import datetime
-import dearpygui.dearpygui as dpg
+import dearpygui.dearpygui as dpg 
+import os
 
 # Get local IP address
 from socket import gethostname, gethostbyname
@@ -12,7 +13,7 @@ HOSTNAME = gethostname()
 LOCAL_IP_ADDRESS = gethostbyname(HOSTNAME)
 
 TM_ADDRESS = (str(LOCAL_IP_ADDRESS), 10035)
-TC_ADDRESS = ('192.168.236.143', 10045)
+TC_ADDRESS = ('192.168.136.205', 10045)
 
 # Sockets
 tm_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -25,6 +26,7 @@ sendable_messages = queue.Queue()
 
 # Data lists
 Time = []
+Outside_temperature = []
 STS35_temperature = []
 BMP180_temperature = []
 Target_temperature = []
@@ -35,40 +37,52 @@ Integral = []
 Derivative = []
 PWM_Output = []
 
+time_offset = 0
 
 def send_to_payload(): 
   while True:   
-    message = sendable_messages.get()
+    message = "hello".encode()#sendable_messages.get()
     tc_socket.sendto(message, TC_ADDRESS)
-    sendable_messages.task_done()
+    # sendable_messages.task_done()
+    sleep(5)
 
 def receive_from_payload():
-  # Receive a message from the transceiver
-  # message, addr = tm_socket.recvfrom(4096)    
-  # message = message.decode()
-  # Get current time
-  start_time = datetime.datetime.now()
   while True:
-    time = (datetime.datetime.now() - start_time).total_seconds()
-    
-    message = f"{time},"
-    for i in range(10):
-      message += "{:.2f},".format(random.uniform(0, 100))
-    # Remove last comma
-    message = message[:-1]
-    
-    received_messages.put(message)
-    
-    sleep(0.1)
-    
+    # Receive a message from the transceiver
+    message, addr = tm_socket.recvfrom(4096)    
+    message = message.decode()    
+    received_messages.put(message)    
 
 def parse_received():
+  # Create a new csv log file and add the header. The file will be named with the current date and time
+  file_name = f"logs/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+  log_file = open(file_name, "w")
+  log_file.write("Time,STS35 temperature,BMP180 temperature,Target temperature,Current target temperature,BMP180 pressure,Proportional,Integral,Derivative,PWM Output,Outside temperature\n")
+  log_file.close()
+  
+  message_count = 0
+  
   while True:
     if not received_messages.empty():
+      message_count += 1
       message = received_messages.get()
       message = [float(x) for x in message.split(',')]
-
-      Time.append(message[0])
+      
+      if len(Time) == 0:
+        time_offset = message[0] / 1000
+        
+      # Print the values with names
+      os.system('cls')
+      print(f"Message count: {message_count}")
+      print(f"Time: {round(message[0] / 1000, 1)} | Time running: {round(message[0] / 1000 - time_offset, 1)} seconds")
+      print(f"Container temperature - STS35: {message[1]} °C | BMP180 temperature: {message[2]} °C")
+      print(f"Target temperature: {message[3]} °C | Current target temperature: {message[4]} °C")
+      print(f"Outside temperature: {message[10]} °C")
+      print(f"BMP180 pressure: {int(message[5])} Pa")
+      print(f"Battery voltage: {message[11]} V")
+      print(f"P: {message[6]} | I: {message[7]} | D: {message[8]} | PWM: {message[9]} | Actual PWM: {int(message[9])}")
+        
+      Time.append((message[0] / 1000) - time_offset)
       STS35_temperature.append(message[1])
       BMP180_temperature.append(message[2])
       Target_temperature.append(message[3])
@@ -78,6 +92,11 @@ def parse_received():
       Integral.append(message[7])
       Derivative.append(message[8])
       PWM_Output.append(message[9])
+      Outside_temperature.append(message[10])
+      
+      if message_count % 10 == 0:
+        with open(file_name, "a") as log_file:
+          log_file.write(f"{round(message[0] / 1000 - time_offset, 1)},{message[1]},{message[2]},{message[3]},{message[4]},{message[5]},{message[6]},{message[7]},{message[8]},{message[9]},{message[10]}\n")
       
       dpg.set_value("sts_temperature", [list(Time), list(STS35_temperature)])
       dpg.set_value("bmp_temperature", [Time, BMP180_temperature])

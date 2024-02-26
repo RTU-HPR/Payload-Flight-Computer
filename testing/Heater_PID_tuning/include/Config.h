@@ -44,7 +44,7 @@ public:
   // MS56XX
   MS56XX::MS56XX_Config ms56xx_config = {
       .wire = &Wire,
-      .i2c_address = MS56XX::MS56XX_I2C_ADDRESS::I2C_0x76, // or 0x77
+      .i2c_address = MS56XX::MS56XX_I2C_ADDRESS::I2C_0x76, // or 0x76
       .ms56xx_type = MS56XX::MS56XX_TYPE::MS5611,          // or MS5607
       .oversampling = MS56XX::MS56XX_OVERSAMPLING::OSR_STANDARD,
   };
@@ -99,7 +99,7 @@ public:
 
   BMP180_Config BMP180_config = {
       .wire = &Wire,
-      .i2c_address = 0x77, // or 0x76
+      .i2c_address = 0x77, // or 0x77
   };
 
   // Container temperature sensor
@@ -145,14 +145,61 @@ public:
   };
   Heater_Config heater_config = {
       .heater_pin = 22,
-      .Kp = 10,
-      .Ki = 0.000025,
-      .Kd = 10000,
-      .Kp_limit = 1000,
-      .Ki_limit = 1000,
-      .Kd_limit = 500,
+      // P = 6.5 I = 0.00002 D = 100000
+      // Seems to be good values, but it is slow to reach the target temperature, but it is stable and does not overshoot
+      // P = 8 I = 0.000015 D = 120000
+      // Seems to be better values, target temperature is reached faster, there is no overshoot, but it doesn't like small target changes
+      // P = 7.5 I = 0.000015 D = 140000
+      // Horrible values, it constantly overshoots the temperature steps
+      // P = 7.5 I = 0.000015 D = 0
+      // Not great, overshoots the temperature steps, but it is a bit better than with D = 140000
+      // P = 10 I = 0.000008 D = 0
+      // Way too slow to reach the temperature steps - inital heating is relatively fast, but then as it approaches the temperature steps, it becomes incredibly slow
+      // P = 7 I = 0.000025 D = 0
+      // Not great, it overshoots and is slow
+      // P = 70 I = 0.00025 D = 0
+      // Increased the PWM duty cycle from 1000 to 10000. Stability is increased and seems to work better, but only tested 30 to 35 degrees
+      // P = 70 I = 0.00025 D = 50000
+      // Worked well, until 30 degrees, then it started to slowly overshoot. The derivative term had close to no effect
+      // P = 80 I = 0.00025 D = 500000
+      // Overshoots the temperature steps, but the temperature increases nicely
+      // P = 60 I = 0.00025 D = 500000
+      // Eveything was good until 30 degrees, then it started to overshoot
+      // P = 80 I = 0.000075 D = 1500000
+      // Multiple changes in the algorithm related to the temperature steps.
+      // Great values, very minimal overshoot, temperature increases nicely. Between a critically damped and underdamped system.
+      // P = 85 I = 0.00007 D = 1800000
+      // Bit more aggressive than the previous values, no overshoot until 34 degrees, then it started to slowly overshoot
+      // P = 90 I = 0.00006 D = 1900000
+      // From inital impression it looks that the P term should be way higher
+      // P = 120 I = 0.00006 D = 1900000
+      // Slow to reach step temperature when starting from room temperature. I term values seems to be too low
+      // P = 150 I = 0.00006 D = 1900000
+      // The same as with P = 120, no noticeable difference
+      // P = 150 I = 0.00007 D = 2500000
+      // Tested from 20 to 33 degrees, it doesn't want to go any higher than 32.8 degrees, and it is very slow to reach that temperature, but up until like 30 degrees it is very good
+      // P = 180 I = 0.000125 D = 2500000
+      // The same issue as with P = 150, but a bit better. Also tested from 20 to 33 degrees
+      // P = 180 I = 0.0002 D = 2500000
+      // Quickly reaches around 33.4 degrees, but then it takes a really long time to continue increasing the temperature. Looks like a higher I term is needed
+      // P = 200 I = 0.000225 D = 2500000
+      // Works really well. Reached target temp in around 1600 seconds. Started oscilating around target temp, because the heater pwm gets set to zero, when the temperature is above target temp by 0.1 degrees
+      // P = 200 I = 0.000235 D = 2500000 Changed the behaviour of the heater pwm, when the temperature is above target temp by 0.1 degrees
+      // Worked really well. Reaches target is 1300 seconds. Still there are minimal oscillations around the target temperature, because of the heater pwm behaviour.
+      // P = 200 I = 0.000250 D = 2500000 Changed the behaviour of the heater pwm, and chaged the passed in temperature to raw temperature.
+      // Absolutely great. The temperature stayed around 0.07 degrees above target.
+      // P = 250 I = 0.000250 D = 2500000
+      // Works really well. No oscillations. Pretty much non existent overshoot. Reaches target temp in 1300 seconds.
+      // P = 300 I = 0.000250 D = 2500000
+      // TBD
+      .Kp = 300,
+      .Ki = 0.000250,
+      .Kd = 2500000,
+      .Kp_limit = 10000,
+      .Ki_limit = 10000,
+      .Kd_limit = 10000,
       .pwm_min = 0,
-      .pwm_max = 1000,
+      .pwm_max = 10000,
       .target_temp = 35,
   };
 };

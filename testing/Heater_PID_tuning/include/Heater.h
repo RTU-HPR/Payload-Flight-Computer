@@ -26,7 +26,7 @@ private:
 
   // Function declarations
   void calculatePidValues(const float &container_temp);
-  void calculateHeaterPwm();
+  void calculateHeaterPwm(const float &container_temp);
 
   void setHeaterPwm();
   void reset();
