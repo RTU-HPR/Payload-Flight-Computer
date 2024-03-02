@@ -68,9 +68,9 @@ bool Sensors::begin(Logging &logging, Config &config)
   // Initialize container barometer
   if (!beginContainerBaro(config))
   {
-    // String errorString = "Container barometer begin fail";
-    // logging.recordError(errorString);
-    // success = false; // Disabled for now, since the sensor is not connected
+    String errorString = "Container barometer begin fail";
+    logging.recordError(errorString);
+    success = false; // Disabled for now, since the sensor is not connected
   }
   else
   {
@@ -80,9 +80,9 @@ bool Sensors::begin(Logging &logging, Config &config)
   // Initialize container temperature sensor
   if (!beginContainerTemperatureSensor(config))
   {
-    // String errorString = "Container temperature begin fail";
-    // logging.recordError(errorString);
-    // success = false; // Disabled for now, since the sensor is not connected
+    String errorString = "Container temperature begin fail";
+    logging.recordError(errorString);
+    success = false; // Disabled for now, since the sensor is not connected
   }
   else
   {
@@ -111,13 +111,13 @@ void Sensors::readSensors()
   readOutsideThermistor();
   outside_thermistor_read_time = millis() - last_outside_thermistor_read_millis;
 
-  // last_container_baro_read_millis = millis();
-  // readContainerBarometer();
-  // container_baro_read_time = millis() - last_container_baro_read_millis;
+  last_container_baro_read_millis = millis();
+  readContainerBarometer();
+  container_baro_read_time = millis() - last_container_baro_read_millis;
 
-  // last_container_temperature_read_millis = millis();
-  // readContainerTemperature();
-  // container_temperature_read_time = millis() - last_container_temperature_read_millis;
+  last_container_temperature_read_millis = millis();
+  readContainerTemperature();
+  container_temperature_read_time = millis() - last_container_temperature_read_millis;
 }
 
 bool Sensors::beginOnBoardBaro(Config &config)

@@ -241,20 +241,22 @@ public:
   };
   Heater_Config heater_config = {
       .heater_pin = 22,
-      .Kp = 7,
-      .Ki = 0.000025,
-      .Kd = 0,
-      .Kp_limit = 1000,
-      .Ki_limit = 1000,
-      .Kd_limit = 500,
+      .Kp = 280,
+      .Ki = 0.00025,
+      .Kd = 2500000,
+      .Kp_limit = 10000,
+      .Ki_limit = 10000,
+      .Kd_limit = 10000,
       .pwm_min = 0,
-      .pwm_max = 200, // 200 out of 1000
+      .pwm_max = 10000,
       .target_temp = 35,
   };
 
   // Parachute
   const int RECOVERY_CHANNEL_1 = 21;
   const int RECOVERY_CHANNEL_2 = 20;
+  const int RECOVERY_CHANNEL_SENSE_1 = 19;
+  const int RECOVERY_CHANNEL_SENSE_2 = 18;
   const int RECOVERY_CHANNEL_FIRE_TIME = 5000;
 
   const int LAUNCH_RAIL_SWITCH_PIN = 10;

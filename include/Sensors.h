@@ -97,7 +97,7 @@ private:
    * @param e_est: Estimation Uncertainty (Default value: 1)
    * @param q: Process Noise (Default value: 0.01)
    */
-  SimpleKalmanFilter _containerTemperatureFilter = SimpleKalmanFilter(1, 1, 0.01);
+  SimpleKalmanFilter _containerTemperatureFilter = SimpleKalmanFilter(1, 1, 0.005);
 
 public:
   String sensorErrorString = "";

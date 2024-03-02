@@ -49,10 +49,16 @@ void setup()
                   freq,
                   freq);
 
+  // Enable watchdog
+  rp2040.wdt_begin(4000);
+
   payload.begin();
   Serial.println("Payload setup complete");
   Serial.println("CPU Speed: " + String(rp2040.f_cpu() / 1000000) + " MHz");
   Serial.println();
+
+  // Reset watchdog
+  rp2040.wdt_reset();
 }
 
 void loop()
@@ -60,4 +66,7 @@ void loop()
   last_total_loop_millis = millis();
   payload.actions.runAllActions(payload.sensors, payload.navigation, payload.communication, payload.logging, payload.heater, payload.config);
   total_loop_time = millis() - last_total_loop_millis;
+
+  // Reset watchdog every loop
+  rp2040.wdt_reset();
 }

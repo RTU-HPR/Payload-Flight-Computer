@@ -260,13 +260,31 @@ void Actions::runRecoveryChannelManagerAction(Config &config)
         // Disable the recovery channel
         if (i == 0)
         {
-          digitalWrite(config.RECOVERY_CHANNEL_1, LOW);
-          Serial.println("Recovery channel 1 turned off");
+          if (digitalRead(config.RECOVERY_CHANNEL_SENSE_1) == HIGH)
+          {
+            Serial.println("Recovery channel 1 was not turned on, trying again");
+            digitalWrite(config.RECOVERY_CHANNEL_1, HIGH);
+            return;
+          }
+          else
+          {
+            digitalWrite(config.RECOVERY_CHANNEL_1, LOW);
+            Serial.println("Recovery channel 1 turned off");
+          }
         }
         else if (i == 1)
         {
-          digitalWrite(config.RECOVERY_CHANNEL_2, LOW);
-          Serial.println("Recovery channel 2 turned off");
+          if (digitalRead(config.RECOVERY_CHANNEL_SENSE_2) == HIGH)
+          {
+            Serial.println("Recovery channel 2 was not turned on, trying again");
+            digitalWrite(config.RECOVERY_CHANNEL_2, HIGH);
+            return;
+          }
+          else
+          {
+            digitalWrite(config.RECOVERY_CHANNEL_2, LOW);
+            Serial.println("Recovery channel 2 turned off");
+          }
         }
 
         // Reset the recovery channel flag, but keep the fire time as it will not be fired again

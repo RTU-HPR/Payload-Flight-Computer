@@ -84,7 +84,7 @@ void Payload::begin()
   pinMode(config.heater_config.heater_pin, OUTPUT_12MA);
   digitalWrite(config.heater_config.heater_pin, LOW);
   // The analog write range and frequency has to be changed for heater PWM to work properly
-  analogWriteRange(1000); // Don't change this value
+  analogWriteRange(10000); // Don't change this value
   analogWriteFreq(100);   // Don't change this value
 
   // Initialize the SD card
