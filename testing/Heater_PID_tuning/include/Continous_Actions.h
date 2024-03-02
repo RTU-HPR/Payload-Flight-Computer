@@ -30,7 +30,7 @@ void Actions::runSensorAction(Sensors &sensors)
 void Actions::runHeaterAction(Heater &heater, const Sensors &sensors)
 {
   // Update the heater
-  heater.update(sensors.data.containerTemperature.temperature);
+  heater.update(sensors.data.containerTemperature.filtered_temperature);
 }
 
 void Actions::runCommunicationAction(Communication &communication, const Sensors &sensors, const Config &config, Heater &heater)

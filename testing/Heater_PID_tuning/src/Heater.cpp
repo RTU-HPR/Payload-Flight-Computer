@@ -131,7 +131,7 @@ void Heater::calculateHeaterPwm(const float &container_temp)
 // heater PWM value
 void Heater::setHeaterPwm()
 {
-  analogWrite(_heater_config.heater_pin, (int)_heater_pwm);
+  analogWrite(_heater_config.heater_pin, constrain((int)_heater_pwm, 0, _heater_config.pwm_max));
 }
 
 void Heater::reset()

@@ -192,7 +192,7 @@ public:
       // Works really well. No oscillations. Pretty much non existent overshoot. Reaches target temp in 1300 seconds.
       // P = 300 I = 0.000250 D = 2500000
       // TBD
-      .Kp = 300,
+      .Kp = 280,
       .Ki = 0.000250,
       .Kd = 2500000,
       .Kp_limit = 10000,
