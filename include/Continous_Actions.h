@@ -214,15 +214,38 @@ void Actions::runRangingAction(Navigation &navigation, Config &config)
 
 void Actions::runGetCommunicationCycleStartAction(Navigation &navigation, Config &config)
 {
+  // If there is no GPS time, start a backup communication cycle
+  if (navigation.navigation_data.gps.epoch_time == 0)
+  {
+    if (millis() > 10000 && lastCommunicationCycle == 0)
+    {
+      lastCommunicationCycle = millis();
+      dataEssentialSendActionEnabled = true;
+    }
+    else if (millis() - lastCommunicationCycle >= 30000)
+    {
+      lastCommunicationCycle = millis();
+      dataEssentialSendActionEnabled = true;
+      Serial.println("NO GPS TIME! Backup communication cycle started: " + String(lastCommunicationCycle));
+    }
+    return;
+  }
+
+  // If the last communication cycle was less than 3 seconds ago, do not check for a new cycle
   if (millis() - lastCommunicationCycle <= 3000)
   {
     return;
   }
-  if (navigation.navigation_data.gps.epoch_time == 0)
+
+  // Check if the cycle hasn't gone on for too long i.e. GPS time is stuck
+  if (millis() - lastCommunicationCycle >= config.COMMUNICATION_CYCLE_INTERVAL * 1000 * 2)
   {
-    return;
+    lastCommunicationCycle = millis();
+    dataEssentialSendActionEnabled = true;
+    Serial.println("Communication cycle reset due to GPS time being stuck: " + String(lastCommunicationCycle));
   }
 
+  // If the current second is a multiple of the communication cycle interval, start a new communication cycle
   if (navigation.navigation_data.gps.second % config.COMMUNICATION_CYCLE_INTERVAL == 0)
   {
     lastCommunicationCycle = millis();
