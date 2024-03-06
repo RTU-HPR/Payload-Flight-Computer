@@ -213,6 +213,10 @@ public:
   // Sensor power
   const int SENSOR_POWER_ENABLE_PIN = 17;
 
+  // Battery
+  const float BATTERY_LOW_VOLTAGE = 5.5;
+  const int BATTERY_LOW_BEEP_INTERVAL = 200;
+
   // Wire0
   const int WIRE0_SCL = 1;
   const int WIRE0_SDA = 0;
