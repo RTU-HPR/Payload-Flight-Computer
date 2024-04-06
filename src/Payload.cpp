@@ -69,6 +69,10 @@ void Payload::begin()
   digitalWrite(config.RECOVERY_CHANNEL_1, LOW);
   digitalWrite(config.RECOVERY_CHANNEL_2, LOW);
 
+  pinMode(config.RECOVERY_CHANNEL_SENSE_2, OUTPUT_12MA);
+  servo_2.attach(config.RECOVERY_CHANNEL_SENSE_2);
+  servo_2.write(config.SERVO_INITIAL_POSITION);
+
   Serial.println("Recovery channels set to output and pulled low");
 
   // Set the buzzer pin to output and pull it low

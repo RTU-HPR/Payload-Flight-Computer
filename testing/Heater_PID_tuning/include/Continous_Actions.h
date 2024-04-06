@@ -7,18 +7,22 @@ void Actions::runContinousActions(Sensors &sensors, Communication &communication
   {
     runSensorAction(sensors);
   }
+  float p, i, d;
+  heater.getPidValues(p, i, d);
 
-  // Run the heater action
-  if (heaterActionEnabled && communication.connecetedToWiFi && millis() > 20000)
+  Serial.println("Millis: " + String(millis()) + " | STS35 temp: " + String(sensors.data.containerTemperature.filtered_temperature) + " C | MCP9808 temp:" + String(sensors._mcptemp) + " C | BMP180: " + String(sensors.data.containerBaro.temperature) + " C | Battery: " + String(sensors.data.battery.voltage) + " V | P:" + String(p * config.heater_config.Kp, 2) + " | I: " + String(i * config.heater_config.Ki, 2) + " | D: "+ String(d * config.heater_config.Kd, 2) + " | Pressure: " + String(sensors.data.containerBaro.pressure) + " Pa");
+  delay(10);
+  // // Run the heater action
+  if (heaterActionEnabled)
   {
     runHeaterAction(heater, sensors);
   }
 
-  // Run the communication action
-  if (communicationActionEnabled)
-  {
-    runCommunicationAction(communication, sensors, config, heater);
-  }
+  // // Run the communication action
+  // if (communicationActionEnabled)
+  // {
+  //   runCommunicationAction(communication, sensors, config, heater);
+  // }
 }
 
 void Actions::runSensorAction(Sensors &sensors)
@@ -30,7 +34,7 @@ void Actions::runSensorAction(Sensors &sensors)
 void Actions::runHeaterAction(Heater &heater, const Sensors &sensors)
 {
   // Update the heater
-  heater.update(sensors.data.containerTemperature.filtered_temperature);
+  heater.update(sensors._mcptemp);
 }
 
 void Actions::runCommunicationAction(Communication &communication, const Sensors &sensors, const Config &config, Heater &heater)

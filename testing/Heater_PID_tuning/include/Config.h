@@ -15,6 +15,7 @@
 #include <ClosedCube_STS35.h>
 #include <ClosedCube_I2C.h>
 #include <SimpleKalmanFilter.h>
+#include "Adafruit_MCP9808.h"
 
 // Our sensor libaries
 #include <MS56XX.h>
@@ -23,7 +24,7 @@
 class Config
 {
 public:
-  bool WAIT_PC = false;
+  bool WAIT_PC = true;
   const bool LOG_TO_STORAGE = true;
 
   struct WiFi_Config
@@ -192,9 +193,9 @@ public:
       // Works really well. No oscillations. Pretty much non existent overshoot. Reaches target temp in 1300 seconds.
       // P = 300 I = 0.000250 D = 2500000
       // TBD
-      .Kp = 280,
-      .Ki = 0.000250,
-      .Kd = 2500000,
+      .Kp = 800,
+      .Ki = 0.0004,
+      .Kd = 0,
       .Kp_limit = 10000,
       .Ki_limit = 10000,
       .Kd_limit = 10000,

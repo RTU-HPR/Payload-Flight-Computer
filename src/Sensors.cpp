@@ -90,6 +90,17 @@ bool Sensors::begin(Logging &logging, Config &config)
   }
   Serial.println();
 
+  if (!mcp9808.begin(0x1F))
+  {
+    Serial.println("Couldn't find MCP9808! Check your connections and verify the address is correct.");
+  }
+  else
+  {
+    mcp9808.setResolution(3);
+    delay(100);
+    mcp9808.wake();
+  }
+
   return success;
 }
 
@@ -118,6 +129,8 @@ void Sensors::readSensors()
   last_container_temperature_read_millis = millis();
   readContainerTemperature();
   container_temperature_read_time = millis() - last_container_temperature_read_millis;
+
+  _mcptemp = mcp9808.readTempC();
 }
 
 bool Sensors::beginOnBoardBaro(Config &config)
@@ -242,7 +255,7 @@ bool Sensors::readContainerBarometer()
 {
   float new_pressure = _containerBaro.readPressure();
   float new_temperature = _containerBaro.readTemperature();
-  
+
   // No value checking is intended
   data.containerBaro.pressure = new_pressure;
   data.containerBaro.temperature = new_temperature;

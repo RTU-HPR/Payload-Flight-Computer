@@ -79,6 +79,16 @@ bool Sensors::begin(Config &config)
   }
   Serial.println();
 
+  if (!mcp9808.begin(0x1F))
+  {
+    Serial.println("Couldn't find MCP9808! Check your connections and verify the address is correct.");
+    while (1)
+      ;
+  }
+  mcp9808.setResolution(3);
+  delay(100);
+  mcp9808.wake();
+
   return success;
 }
 
@@ -90,6 +100,7 @@ void Sensors::readSensors()
   readOutsideThermistor();
   readContainerBarometer();
   readContainerTemperature();
+  _mcptemp = mcp9808.readTempC();
 }
 
 bool Sensors::beginOnBoardBaro(Config &config)
@@ -215,7 +226,7 @@ bool Sensors::readContainerBarometer()
   float new_pressure = _containerBaro.readPressure();
   float new_temperature = _containerBaro.readTemperature();
 
-  if ((new_pressure > 100 && new_pressure < 120000) && (new_temperature > -100 && new_temperature < 100)) // Between 100 and 120_000 Pa and -100 and 100 C
+  if ((new_pressure > 0 && new_pressure < 200000) && (new_temperature > -100 && new_temperature < 100)) // Between 100 and 120_000 Pa and -100 and 100 C
   {
     data.containerBaro.pressure = new_pressure;
     data.containerBaro.temperature = new_temperature;

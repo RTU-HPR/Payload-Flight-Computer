@@ -7,6 +7,8 @@
 #include <Logging.h>
 #include <Heater.h>
 
+extern Servo servo_2;
+
 class Payload
 {
   private:

@@ -43,42 +43,7 @@ void Heater::calculatePidValues(const float &container_temp)
   // Time since last pid update
   float dt = (millis() - _last_pid_calculation_time);
 
-  // If the temperature is 0.05 degree below or above the safe temp, reset the time at temp step
-  if ((_current_temperature_step - 0.05) > container_temp || container_temp > (_current_temperature_step + 0.05))
-  {
-    _time_at_temperature_step_start = millis();
-  }
-  
-  // Update temperature step temp value to nearest rounded down integer
-  // if the container temp exceededs current temp step temp
-  if (container_temp >= _current_temperature_step + 1)
-  {
-    _current_temperature_step = constrain(floor(container_temp), 0, _heater_config.target_temp);
-    _integral_term += _proportional_term + _derivative_term - 50;
-  }
-  else if (container_temp >= _current_temperature_step + 0.5)
-  {
-    _current_temperature_step = constrain(floor(container_temp) + 0.5, 0, _heater_config.target_temp);
-    _integral_term += _proportional_term + _derivative_term - 50;
-  }
-
-  // Calculate proportional term based on the state
-  if (_heater_config.target_temp == _current_temperature_step)
-  {
-    _proportional_term = _heater_config.target_temp - container_temp;
-  }
-  else
-  {
-    int step_to_increase_by = 1;
-
-    // If the temperature has stayed at the safe temp for 10 seconds, increase the safe temperature
-    if ((millis() - _time_at_temperature_step_start) > 10000)
-    {
-      _current_temperature_step += step_to_increase_by;
-      _time_at_temperature_step_start = millis();
-    }
-    _proportional_term = _current_temperature_step - container_temp;
-  }
+  _proportional_term = _heater_config.target_temp - container_temp;
 
   // Integral term
   _integral_term += _proportional_term * dt;
@@ -105,27 +70,7 @@ void Heater::calculateHeaterPwm(const float &container_temp)
   _heater_pwm += _heater_config.Ki * _integral_term;
   _heater_pwm += _heater_config.Kd * _derivative_term;
 
-  // Constrain the final sum to PWM output range
-  if (container_temp >= _heater_config.target_temp + 0.05)
-  {
-    _heater_pwm /= 1.1;
-  }
-  else if (container_temp >= _heater_config.target_temp + 0.1)
-  {
-    _heater_pwm /= 1.4;
-  }
-  else if (container_temp >= _heater_config.target_temp + 0.2)
-  {
-    _heater_pwm /= 3.5;
-  }
-  else if (container_temp >= _heater_config.target_temp + 0.5)
-  {
-    _heater_pwm = 0;
-  }
-  else
-  {
-    _heater_pwm = constrain(_heater_pwm, _heater_config.pwm_min, _heater_config.pwm_max);
-  }
+  _heater_pwm = constrain(_heater_pwm, _heater_config.pwm_min, _heater_config.pwm_max);
 }
 
 // heater PWM value

@@ -35,6 +35,11 @@ int container_baro_read_time = 0;
 int container_temperature_read_time = 0;
 int outside_thermistor_read_time = 0;
 
+// Declare Servo objects as global variables
+// Really bad way to do this, but it should be fine for now
+extern Servo servo_2;
+Servo servo_2 = Servo();
+
 void setup()
 {
   // INCREASES SPI CLOCK SPEED TO BE THE SAME AS CPU SPEED
@@ -50,7 +55,7 @@ void setup()
                   freq);
 
   // Enable watchdog
-  rp2040.wdt_begin(4000);
+  rp2040.wdt_begin(payload.config.WATCHDOG_TIMER);
 
   payload.begin();
   Serial.println("Payload setup complete");

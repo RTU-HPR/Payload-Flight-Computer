@@ -6,6 +6,8 @@
 #include <LittleFS.h>
 #include <SDFS.h>
 #include <cppQueue.h>
+#include <Servo.h>
+
 
 // Public libraries
 #include <Adafruit_Sensor.h>
@@ -15,6 +17,7 @@
 #include <ClosedCube_STS35.h>
 #include <ClosedCube_I2C.h>
 #include <SimpleKalmanFilter.h>
+#include "Adafruit_MCP9808.h"
 
 // Our wrappers
 #include <RadioLib_wrapper.h>
@@ -61,9 +64,9 @@ public:
   // Ranging 2.4 GHZ LoRa
   Ranging_Wrapper::Ranging_Slave RANGING_SLAVES[3] =
       {
-          {.position = {0, 0, 0}, .address = 0x12345678},
-          {.position = {0, 0, 0}, .address = 0xABCD9876},
-          {.position = {0, 0, 0}, .address = 0x9A8B7C6D},
+          {.position = {0, 0, 0}, .address = 0x12345678}, // Recovery station
+          {.position = {0, 0, 0}, .address = 0xABCD9876}, // Secondary receiver on rotator
+          {.position = {0, 0, 0}, .address = 0xABCD9876}, // Secondary receiver on rotator
   };
   Ranging_Wrapper::Mode ranging_mode = Ranging_Wrapper::Mode::MASTER;
   const int RANGING_LORA_TIMEOUT = 200;
@@ -97,7 +100,7 @@ public:
   };
 
   // SD card
-  String TELMETRY_FILE_HEADER = "index,time_on_ms,gps_epoch_time,gps_hour:gps_minute:gps_second,gps_lat,gps_lng,gps_altitude,gps_speed,gps_satellites,gps_heading,gps_pdop,container_temp,container_temp_filtered,container_baro_temp,container_baro_pressure,heater_enabled,heater_current_temp_step,heater_target_temp,heater_pwm,heater_pid_p,heater_pid_i,heater_pid_d,onboard_baro_temp,onboard_baro_pressure,onboard_baro_altitude,outside_thermistor_temp,imu_accel_x,imu_accel_y,imu_accel_z,imu_heading,imu_pitch,imu_roll,imu_gyro_x,imu_gyro_y,imu_gyro_z,imu_temp,ranging_0_distance,ranging_0_f_error,ranging_0_rssi,ranging_0_snr,ranging_0_time,ranging_1_distance,ranging_1_f_error,ranging_1_rssi,ranging_1_snr,ranging_1_time,ranging_2_distance,ranging_2_f_error,ranging_2_rssi,ranging_2_snr,ranging_2_time,ranging_position_lat,ranging_position_lng,ranging_position_height,battery_voltage,used_heap,loop_time,continuous_actions_time,timed_actions_time,requested_actions_time,gps_read_time,logging_time,sensor_read_time,on_board_baro_read_time,imu_read_time,battery_voltage_read_time,container_baro_read_time,container_temperature_read_time,outside_thermistor_read_time";
+  String TELMETRY_FILE_HEADER = "index,time_on_ms,gps_epoch_time,gps_hour:gps_minute:gps_second,gps_lat,gps_lng,gps_altitude,gps_speed,gps_satellites,gps_heading,gps_pdop,container_temp,container_temp_filtered,container_baro_temp,container_baro_pressure,mcp9808_temperature,heater_enabled,heater_current_temp_step,heater_target_temp,heater_pwm,heater_pid_p,heater_pid_i,heater_pid_d,onboard_baro_temp,onboard_baro_pressure,onboard_baro_altitude,outside_thermistor_temp,imu_accel_x,imu_accel_y,imu_accel_z,imu_heading,imu_pitch,imu_roll,imu_gyro_x,imu_gyro_y,imu_gyro_z,imu_temp,ranging_0_distance,ranging_0_f_error,ranging_0_rssi,ranging_0_snr,ranging_0_time,ranging_1_distance,ranging_1_f_error,ranging_1_rssi,ranging_1_snr,ranging_1_time,ranging_2_distance,ranging_2_f_error,ranging_2_rssi,ranging_2_snr,ranging_2_time,ranging_position_lat,ranging_position_lng,ranging_position_height,battery_voltage,used_heap,loop_time,continuous_actions_time,timed_actions_time,requested_actions_time,gps_read_time,logging_time,sensor_read_time,on_board_baro_read_time,imu_read_time,battery_voltage_read_time,container_baro_read_time,container_temperature_read_time,outside_thermistor_read_time";
   String INFO_FILE_HEADER = "time,info";
   String ERROR_FILE_HEADER = "time,error";
   String CONFIG_FILE_HEADER = "descent_flag,remaining_descent_time,parachutes_deployed_flag";
@@ -245,9 +248,9 @@ public:
   };
   Heater_Config heater_config = {
       .heater_pin = 22,
-      .Kp = 280,
-      .Ki = 0.00025,
-      .Kd = 2500000,
+      .Kp = 800,
+      .Ki = 0.0004,
+      .Kd = 0,
       .Kp_limit = 10000,
       .Ki_limit = 10000,
       .Kd_limit = 10000,
@@ -261,7 +264,11 @@ public:
   const int RECOVERY_CHANNEL_2 = 20;
   const int RECOVERY_CHANNEL_SENSE_1 = 19;
   const int RECOVERY_CHANNEL_SENSE_2 = 18;
-  const int RECOVERY_CHANNEL_FIRE_TIME = 5000;
+  const int RECOVERY_CHANNEL_FIRE_TIME = 30000;
+
+  // Servos
+  const int SERVO_INITIAL_POSITION = 75;
+  const int SERVO_FINAL_POSITION = 0;
 
   const int LAUNCH_RAIL_SWITCH_PIN = 10;
   const int LAUNCH_RAIL_SWITCH_OFF_THRESHOLD = 5000;
@@ -299,4 +306,5 @@ public:
   const int PFC_INFO_ERROR_REQUEST = 1001;
   const int PFC_FORMAT_REQUEST = 1002;
   const int PFC_RECOVERY_REQUEST = 1003;
+  const int RESET_SERVO_POSITION_REQUEST = 1005;
 };

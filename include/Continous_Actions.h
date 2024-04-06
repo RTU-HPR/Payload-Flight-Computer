@@ -5,6 +5,9 @@ unsigned long last_sensor_read_millis = 0;
 unsigned long last_gps_read_millis = 0;
 unsigned long last_logging_millis = 0;
 
+// Get Servo objects
+extern Servo servo_2;
+
 void Actions::runContinousActions(Sensors &sensors, Navigation &navigation, Communication &communication, Logging &logging, Heater &heater, Config &config)
 {
   // Receive any commands
@@ -141,6 +144,10 @@ void Actions::runCommandReceiveAction(Communication &communication, Logging &log
     {
       formatStorageActionEnabled = true;
     }
+    else if (packet_id == config.RESET_SERVO_POSITION_REQUEST)
+    {
+      servo_2.write(config.SERVO_INITIAL_POSITION);
+    }
     else if (packet_id == config.PFC_RECOVERY_REQUEST)
     {
       recoveryFireActionEnabled = true;
@@ -198,7 +205,7 @@ void Actions::runSensorAction(Sensors &sensors)
 void Actions::runHeaterAction(Heater &heater, const Sensors &sensors)
 {
   // Update the heater
-  heater.update(sensors.data.containerTemperature.filtered_temperature);
+  heater.update(sensors._mcptemp);
 }
 
 void Actions::runGpsAction(Navigation &navigation)
@@ -278,8 +285,11 @@ void Actions::runRecoveryChannelManagerAction(Config &config)
         }
         else if (i == 1)
         {
-          digitalWrite(config.RECOVERY_CHANNEL_2, HIGH);
-          Serial.println("Recovery channel 2 fired");
+          servo_2.write(config.SERVO_FINAL_POSITION);
+          recoveryChannelShouldBeFired[i] = false;
+          recoveryChannelFireTimes[i] = 0;
+          Serial.println("Servo 2 engaged");
+          return;
         }
       }
 
@@ -289,35 +299,17 @@ void Actions::runRecoveryChannelManagerAction(Config &config)
         // Disable the recovery channel
         if (i == 0)
         {
-          if (digitalRead(config.RECOVERY_CHANNEL_SENSE_1) == HIGH)
-          {
-            Serial.println("Recovery channel 1 was not turned on, trying again");
-            digitalWrite(config.RECOVERY_CHANNEL_1, HIGH);
-            return;
-          }
-          else
-          {
-            digitalWrite(config.RECOVERY_CHANNEL_1, LOW);
-            Serial.println("Recovery channel 1 turned off");
-          }
+          digitalWrite(config.RECOVERY_CHANNEL_1, LOW);
         }
         else if (i == 1)
         {
-          if (digitalRead(config.RECOVERY_CHANNEL_SENSE_2) == HIGH)
-          {
-            Serial.println("Recovery channel 2 was not turned on, trying again");
-            digitalWrite(config.RECOVERY_CHANNEL_2, HIGH);
-            return;
-          }
-          else
-          {
-            digitalWrite(config.RECOVERY_CHANNEL_2, LOW);
-            Serial.println("Recovery channel 2 turned off");
-          }
+          servo_2.write(config.SERVO_FINAL_POSITION);
+          // digitalWrite(config.RECOVERY_CHANNEL_2, LOW);
         }
 
         // Reset the recovery channel flag, but keep the fire time as it will not be fired again
         recoveryChannelShouldBeFired[i] = false;
+        recoveryChannelFireTimes[i] = 0;
       }
     }
   }
@@ -441,6 +433,8 @@ String Actions::createLoggablePacket(Sensors &sensors, Heater &heater, Navigatio
   packet += String(sensors.data.containerBaro.temperature, 2);
   packet += ",";
   packet += String(sensors.data.containerBaro.pressure);
+  packet += ",";
+  packet += String(sensors._mcptemp, 1);
   packet += ",";
   // Heating system
   float p, i, d;

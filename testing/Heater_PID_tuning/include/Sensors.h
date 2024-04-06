@@ -46,6 +46,8 @@ private:
    */
   ClosedCube::Sensor::STS35 _containerTemperatureSensor;
 
+  Adafruit_MCP9808 mcp9808 = Adafruit_MCP9808();
+
   /**
    * @brief Structure to hold IMU sensor data.
    */
@@ -93,6 +95,7 @@ private:
 public:
   String sensorErrorString = "";
 
+  float _mcptemp = 0;
   /**
    * @brief Structure to store all sensor data
    */

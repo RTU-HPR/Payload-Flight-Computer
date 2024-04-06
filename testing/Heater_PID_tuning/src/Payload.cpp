@@ -59,15 +59,15 @@ void Payload::begin()
 
   Serial.println("Sensor power enabled");
 
-  communication.beginWiFi(config.wifi_config);
-  Serial.println("WiFi setup complete");
+  // communication.beginWiFi(config.wifi_config);
+  // Serial.println("WiFi setup complete");
 
   // Set the heater pin to output and pull it low
   pinMode(config.heater_config.heater_pin, OUTPUT_12MA);
   digitalWrite(config.heater_config.heater_pin, LOW);
   // The analog write range and frequency has to be changed for heater PWM to work properly
   analogWriteRange(10000); // Don't change this value
-  analogWriteFreq(100);   // Don't change this value
+  analogWriteFreq(100);    // Don't change this value
 
   // Initialise all sensors
   if (!sensors.begin(config))
@@ -81,6 +81,8 @@ void Payload::begin()
   Serial.println("Temperature before heater init: " + String(sensors.data.containerTemperature.filtered_temperature) + " degrees");
   // Initialise the heater
   heater.begin(config.heater_config);
+  // This heater power should give around 2 W of heating power
+  // analogWrite(config.heater_config.heater_pin, 3800);
   heater.enableHeater(sensors.data.containerTemperature.filtered_temperature);
   Serial.println("Heater initialized successfully");
 
